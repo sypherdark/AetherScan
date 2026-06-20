@@ -1,254 +1,239 @@
-# AetherScan - Autonomous Indoor 3D Scanning Drone
+# AetherScan — Autonomous Indoor 3D Scanning Drone
 
 <p align="center">
-  <strong>Professional indoor mapping simulation powered by ROS2 + Gazebo</strong>
+  <strong>A drone that flies itself through an unknown indoor space, maps it in real time, and exports a 3D reconstruction.</strong>
 </p>
 
----
+AetherScan is a from-scratch indoor drone **autonomy stack** — 6-DoF physics, SLAM,
+frontier + coverage exploration, and semantic 3D reconstruction — built to the point
+where it demonstrates **coverage parity flying on its own drifting pose estimate vs.
+flying on ground truth**, in simulation. The remaining gaps to real hardware are
+identified, measured, and tracked in [ROADMAP.md](ROADMAP.md) and
+[REALWORLD_READINESS.md](REALWORLD_READINESS.md).
 
-## Overview
-
-AetherScan is a complete autonomous indoor scanning drone simulation system. It combines a realistic Gazebo simulation environment with a full ROS2 software stack for autonomous 3D mapping of indoor spaces.
-
-### Key Capabilities
-
-- **Fully Autonomous Mapping** — Start a mission and the drone explores, maps, and returns home automatically
-- **Real-time 3D Reconstruction** — High-quality point cloud generation and mesh reconstruction using RTAB-Map
-- **Intelligent Exploration** — Frontier-based exploration with coverage path planning
-- **Obstacle Avoidance** — Real-time collision avoidance using depth camera and LiDAR
-- **Web Dashboard** — Beautiful real-time 3D visualization built with Next.js + Three.js
-- **Multiple Environments** — Office, warehouse, and apartment simulation worlds
-- **Manual Override** — Keyboard teleoperation available at any time
+> **What actually runs:** the `redwood_sim/` Python backend (all physics, sensing,
+> mapping, planning) streaming state over a WebSocket to a Next.js + React Three Fiber
+> dashboard. **You do not need ROS 2 or Gazebo to run AetherScan.** The
+> `aetherscan_ws/` ROS 2 workspace is scaffolding for the eventual hardware-transfer
+> target — see [Repository layout](#repository-layout).
 
 ---
 
-## Architecture
+## How it works
+
+Two independent processes with a single clean data contract between them.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    AetherScan System                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │ Gazebo   │  │  SLAM    │  │Navigation│  │ Mission  │   │
-│  │Simulation│──│ Pipeline │──│  Stack   │──│ Control  │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-│       │              │              │              │         │
-│       ▼              ▼              ▼              ▼         │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │  Sensor  │  │ 3D Map   │  │  Path    │  │  State   │   │
-│  │  Feeds   │  │ Building │  │ Planning │  │ Machine  │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │            Web Dashboard (Next.js + Three.js)         │   │
-│  │  • 3D Point Cloud Viewer  • Mission Control          │   │
-│  │  • Camera Feed            • Performance Metrics      │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────── redwood_sim/ (Python) ────────────────────────────┐
+│                          ALL computation lives here                            │
+│                                                                                │
+│   physics.py ──► controls.py ──► navigation.py ──► discovery_map.py            │
+│   (RK4 6-DoF      (cascaded      (frontier +        (log-odds occupancy        │
+│    @ 500 Hz)       PID)           coverage A*)       grid, 0.2 m)              │
+│        │              │               │                   │                    │
+│   sensors.py    state_estimation.py   scan_matching.py    exporters.py         │
+│   (168-ray       (drifting pose       (Olson 2009         (PLY / GLB / SVG     │
+│    LiDAR sim)     estimate)            SLAM correction)     deliverables)       │
+│                                                                                │
+│                     bridge/server.py  ──►  WebSocket :8765  (20 Hz state)      │
+└────────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                          JSON over WebSocket
+                                      │
+┌──────────────────────── dashboard/ (Next.js + R3F) ───────────────────────────┐
+│                       DISPLAY ONLY — zero physics, zero planning               │
+│                                                                                │
+│   ScanEnvironment   PointCloudRenderer   DiscoveredMap   PathVisualization     │
+│   (loads scene GLB) (streams recon cloud)(occupancy grid)(planned path)        │
+│                          MissionControl (start / stop / god-mode)              │
+└────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+**Invariant #0:** the dashboard never computes physics or planning. It is a terminal.
+Every number it draws was produced in Python and shipped over the socket.
+
+A single mission loop: the drone starts with an **empty** map (everything unknown).
+Each tick it raycasts a 168-ray LiDAR against the scene, folds the hits into a
+log-odds occupancy grid, picks the next frontier (using a FUEL-style global tour to
+avoid re-walking corridors), plans an obstacle-inflated A* path to it, and flies there
+under a cascaded PID controller — while a correlative scan-matcher bounds the drift in
+its self-estimated pose. Scanned points accumulate into a voxel-deduplicated cloud you
+can export as a colored PLY, a Poisson GLB mesh, and an SVG floor plan.
 
 ---
 
-## Prerequisites
+## Quick start (no ROS, no Docker, no GPU)
 
-### System Requirements
-- **OS**: Ubuntu 22.04 LTS (recommended) or macOS with Docker
-- **RAM**: 16 GB minimum (32 GB recommended)
-- **GPU**: NVIDIA GPU recommended for Gazebo rendering
-- **Disk**: 10 GB free space
+Requires **Python 3.11+** (Apple Silicon: install via Homebrew — the system 3.9
+segfaults on the Open3D BVH build) and **Node 18+**.
 
-### Software Dependencies
-- ROS2 Humble Hawksbill
-- Gazebo Garden (gz-sim)
-- RTAB-Map ROS2 package
-- Node.js 18+ (for dashboard)
-- Python 3.10+
-
----
-
-## Installation
-
-### Option 1: Docker (Recommended)
-
-Unified **simulation + 3D dashboard** (indoor `.ply` meshes, mission control, live point cloud):
-
+### 1. Set up the physics backend
 ```bash
-./run-aetherscan.sh
-# → http://localhost:3000  |  rosbridge ws://localhost:9090
+cd redwood_sim
+./setup-macos.sh        # creates .venv (Python 3.11) and installs requirements.txt
+#  …or manually:
+#  python3.11 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ```
 
-Local dashboard dev with Docker sim only:
+### 2. Run the two processes
 
+**One-shot convenience script** (starts the bridge headless, then the dashboard):
 ```bash
-./run-aetherscan.sh --local
+./run-aetherscan.sh --dashboard            # from repo root
+./run-aetherscan.sh --dashboard --scene room_0    # pick a scene
+# → http://localhost:3000
 ```
 
-Export / refresh mesh assets for the dashboard:
-
+**Or run them by hand in two terminals:**
 ```bash
-python3 scripts/export-meshes-to-dashboard.py
-```
+# Terminal 1 — physics bridge (WebSocket ws://127.0.0.1:8765)
+cd redwood_sim
+.venv/bin/python -m bridge --scene apartment_1
 
-### Option 2: Native Installation
-
-#### 1. Install ROS2 Humble
-```bash
-sudo apt update && sudo apt install -y \
-  ros-humble-desktop \
-  ros-humble-gazebo-ros-pkgs \
-  ros-humble-rtabmap-ros \
-  ros-humble-rosbridge-server \
-  ros-humble-robot-state-publisher \
-  ros-humble-xacro \
-  ros-humble-tf2-ros \
-  ros-humble-nav-msgs \
-  ros-humble-sensor-msgs \
-  ros-humble-geometry-msgs \
-  python3-colcon-common-extensions
-```
-
-#### 2. Build the Workspace
-```bash
-cd aetherscan_ws
-source /opt/ros/humble/setup.bash
-colcon build --symlink-install
-source install/setup.bash
-```
-
-#### 3. Install Dashboard
-```bash
+# Terminal 2 — dashboard
 cd dashboard
 npm install
+npm run dev
+# → http://localhost:3000
 ```
 
----
+Open `http://localhost:3000`, pick a scene, hit **Start Mission**, and watch the drone
+explore. The fuchsia **GOD** button enables ~3× time acceleration.
 
-## Quick Start
+> **Note on scene meshes:** the dashboard's visual `.glb` meshes and the backend's
+> collision meshes are **not** in the repo (they're hundreds of MB, generated from the
+> Meta Replica dataset). The physics bridge runs fine without them; the 3D viewport
+> will be empty until you generate the assets — see [Scene assets](#scene-assets).
 
-### Launch Full Autonomous Scanning Mission
-
+### 3. Run the tests
 ```bash
-# Terminal 1: Start simulation + all systems
-source aetherscan_ws/install/setup.bash
-ros2 launch aetherscan_bringup simulation.launch.py world:=office_environment
-
-# Terminal 2: Start autonomous mission
-ros2 launch aetherscan_bringup autonomous_scan.launch.py
-
-# Terminal 3: Web dashboard
-cd dashboard && npm run dev
-# Open http://localhost:3000
-```
-
-### Launch with Manual Teleop
-
-```bash
-# Terminal 1: Simulation
-ros2 launch aetherscan_bringup teleop_mode.launch.py world:=warehouse
-
-# Terminal 2: Keyboard control
-ros2 run aetherscan_teleop keyboard_teleop
-```
-
-### Available Worlds
-
-| World | Description | Size |
-|-------|-------------|------|
-| `office_environment` | Multi-room office with corridors | 20m × 15m |
-| `warehouse` | Large warehouse with shelving | 30m × 20m |
-| `apartment` | Residential apartment | ~60 m² |
-
----
-
-## Keyboard Teleop Controls
-
-| Key | Action |
-|-----|--------|
-| `W` / `S` | Forward / Backward |
-| `A` / `D` | Strafe Left / Right |
-| `Q` / `E` | Yaw Left / Right |
-| `R` / `F` | Altitude Up / Down |
-| `T` | Takeoff |
-| `L` | Land |
-| `Space` | Emergency Stop |
-| `M` | Switch to Autonomous Mode |
-
----
-
-## Mission Control via ROS2 Services
-
-```bash
-# Start a scanning mission
-ros2 service call /aetherscan/start_mission std_srvs/srv/Trigger
-
-# Pause mission
-ros2 service call /aetherscan/pause_mission std_srvs/srv/Trigger
-
-# Resume mission
-ros2 service call /aetherscan/resume_mission std_srvs/srv/Trigger
-
-# Abort and return home
-ros2 service call /aetherscan/abort_mission std_srvs/srv/Trigger
+cd redwood_sim
+.venv/bin/python -m pytest tests -q        # 8 state-estimation regression tests
 ```
 
 ---
 
-## Web Dashboard
+## The WebSocket protocol
 
-The web dashboard provides real-time visualization at `http://localhost:3000`:
+The bridge speaks JSON over `ws://127.0.0.1:8765`, broadcasting state at 20 Hz.
 
-- **3D Map Viewer** — Interactive point cloud with orbit controls
-- **Drone Tracking** — Real-time position and orientation
-- **Camera Feed** — Live RGB and depth streams
-- **Mission Panel** — Start/stop controls with progress tracking
-- **Metrics** — Coverage %, area mapped, point count, flight time
+| Message | Direction | Payload |
+|---|---|---|
+| `hello` | server→client | `visual_mesh_url`, `scene_bounds` (ROS ENU frame, never pre-transformed) |
+| `scene_changed` | server→client | same as `hello`, on scene switch |
+| `state` (20 Hz) | server→client | `position`, `quaternion`, `velocity`, `tilt`, `altitude`, `coverage_pct`, `total_points`, `path`, `discovery_map`, `map_points` (new points since last frame), `localization{ mode, pos_drift_m, yaw_drift_deg, slam_corrections, slam_match_score, slam_health }`, `god_mode` |
+| `set_scene` | client→server | switch the active scene |
+| `set_god_mode` | client→server | toggle 3× time acceleration |
+| `export_scan` | client→server | run the PLY/GLB/SVG export pipeline async; replies `export_started` / `export_complete{ urls, files, errors }` |
+
+Reconstruction points are streamed as **deltas** (`map_points` = new-since-last-frame),
+and the frontend uploads only new points into a preallocated 500k buffer — it never
+rebuilds the cloud. All server sends pass through a single `asyncio.Lock` so a
+scene-switch can't race the 20 Hz broadcast and drop the connection.
+
+**Coordinate convention:** everything in Python is **Z-up ROS / ENU** (X=forward,
+Y=left, Z=up). The Three.js layer applies `rosToThree(x,y,z) = [x, z, -y]` exactly
+once, at the scene group. `scene_bounds` cross the wire in the ROS frame, untouched.
+
+Bridge CLI: `python -m bridge --scene <id> [--host 127.0.0.1] [--port 8765] [--rate 20] [--voxel 0.03] [--dt 0.002]`
 
 ---
 
-## Configuration
+## What's in the autonomy stack
 
-Key parameters can be adjusted in `aetherscan_ws/src/*/config/`:
+| Module | What it does | Notable detail |
+|---|---|---|
+| `core/physics.py` | 6-DoF quadrotor rigid body, **RK4 @ 500 Hz** | ~1.45 kg frame, drag, ground effect, Dryden wind; collision resolved per micro-step to prevent tunneling |
+| `core/controls.py` | Cascaded PID: position→velocity→attitude→thrust | Correct ZYX-Euler world→body tilt mapping (a swapped-axis bug previously made it fly perpendicular to its command) |
+| `core/sensors.py` | 168-ray LiDAR (7 rings × 24), range/normal noise | Configurable FOV (360° RPLIDAR baseline; 87° = D435 camera-class) |
+| `core/discovery_map.py` | Log-odds occupancy grid, 0.2 m | Floor hits are FREE at flight altitude; noisy returns can't flip a cell; compact body model fits 0.8 m doorways |
+| `core/navigation.py` | Frontier + coverage exploration, A* path-following | FUEL-style global tour ordering: **+15–56 % coverage per meter** |
+| `core/state_estimation.py` | Drifting, noisy pose estimate (the sim-to-real seam) | `config.use_estimated_pose` — off for the clean demo |
+| `core/scan_matching.py` | Correlative scan-matcher (Olson 2009) + keyframe SLAM | Bounds drift to **0.04–0.10 m** vs. **0.14→0.33 m** unbounded |
+| `core/exporters.py` | PLY (semantic-colored) / GLB (Poisson) / SVG floor plan | Written to `dashboard/public/exports/` |
 
-- `control_params.yaml` — PID gains, velocity limits, safety envelope
-- `exploration_params.yaml` — Frontier detection, coverage settings
-- `slam_params.yaml` — RTAB-Map parameters, voxel sizes
-- `mission_params.yaml` — Scan altitude, speed, timeout
+**Headline result:** with `use_estimated_pose=True`, the drone flies entirely on its
+own estimate — discovery map, frontier goals, path-following, and trajectory setpoints
+all live in the estimated frame — and reaches **coverage parity with ground-truth
+navigation** (apartment_1 35.2 % vs 37.0 %; room_0 89.8 % vs 87.2 %), with *lower* tilt
+and *fewer* wall contacts. Full audit: [REALWORLD_READINESS.md](REALWORLD_READINESS.md).
 
 ---
 
-## Project Structure
+## Scene assets
+
+AetherScan ships with **18 Meta Replica scenes** (`apartment_0–2`, `frl_apartment_0–5`,
+`office_0–4`, `room_0–2`). For licensing and size reasons the dataset and generated
+meshes are **not** committed. To populate the 3D viewport:
+
+1. Obtain the [Replica dataset](https://github.com/facebookresearch/Replica-Dataset)
+   and place/symlink scenes under `redwood_sim/data/replica/<id>/`.
+2. Generate dashboard visual meshes and backend collision meshes:
+   ```bash
+   python3 scripts/convert_replica_to_glb.py          # → dashboard/public/meshes/<id>.glb
+   python3 scripts/build_collision_meshes_fast.py     # → <id>_collision.ply (~120k tris)
+   ```
+
+The physics bridge runs without these (it falls back to built-in/procedural geometry);
+they only affect what the dashboard *renders* and what the backend raycasts against.
+
+---
+
+## Repository layout
 
 ```
-aetherscan_ws/src/
-├── aetherscan_description/   # Drone URDF/SDF models and sensors
-├── aetherscan_gazebo/        # Gazebo worlds and launch files
-├── aetherscan_slam/          # SLAM pipeline (RTAB-Map integration)
-├── aetherscan_navigation/    # Exploration, path planning, avoidance
-├── aetherscan_perception/    # Point cloud processing, mesh reconstruction
-├── aetherscan_control/       # Flight controller, trajectory tracking
-├── aetherscan_teleop/        # Keyboard teleoperation
-├── aetherscan_mission/       # Mission state machine, metrics
-└── aetherscan_bringup/       # Top-level launch files, RViz config
-dashboard/                    # Next.js + Three.js web interface
-docker/                       # Docker Compose setup
-config/                       # Global configuration
+redwood_sim/          ← THE WORKING SYSTEM (Python: physics, sensing, mapping, planning, SLAM)
+  core/               ← physics, controls, sensors, discovery_map, navigation, state_estimation, scan_matching, exporters
+  bridge/server.py    ← WebSocket bridge :8765
+  simulation/engine.py← fixed-timestep mission loop
+  tests/              ← state-estimation regression suite
+dashboard/            ← Next.js + React Three Fiber UI (display only)
+  src/components/three/  ← scene, point cloud, occupancy, path, drone renderers
+  src/lib/            ← WebSocket client, scene registry, ROS↔Three transforms
+scripts/              ← Replica → GLB conversion, collision-mesh builder, semantics
+aetherscan_ws/        ← ROS 2 (Humble) workspace — HARDWARE-TRANSFER TARGET, not required to run the sim
+docker/               ← optional containerized sim + dashboard
 ```
+
+### About the ROS 2 workspace
+`aetherscan_ws/` contains a full ROS 2 package set (`description`, `gazebo`,
+`navigation`, `perception`, `slam`, `control`, `mission`, `bringup`). It is the
+**intended deployment target** for porting the autonomy stack onto a real airframe
+(RViz config, URDF/Xacro drone model, Gazebo worlds, launch files). It is **not** the
+path that runs the simulation you see in the dashboard — that's `redwood_sim/`. Treat
+the ROS 2 side as scaffolding under active development, not a finished product.
 
 ---
 
-## Performance Metrics
+## Research grounding
 
-The system tracks and reports:
-- **Coverage**: Percentage of accessible area mapped
-- **Density**: Average point cloud density (points/m²)
-- **Accuracy**: Mapping quality score
-- **Efficiency**: Time to complete coverage
-- **Distance**: Total flight path length
+The algorithms are drawn from the literature and measured against it:
+
+- **FUEL** (Zhou et al., RA-L 2021) — global tour ordering of frontier vantages.
+- **Olson (2009)** — correlative scan matching for the SLAM correction.
+- **Emesent Hovermap** field practice — SLAM-health-aware speed gating.
+- **DARPA SubT** (CERBERUS, CoSTAR/NeBula) — uncertainty-aware reactive standoffs
+  (wall grazes 140→52 on the cluttered scene).
+
+---
+
+## Honest status — what's *not* done
+
+1. **Global loop closure** — SLAM bounds drift locally but there's no pose-graph; long
+   (200 m+) missions still accumulate global error.
+2. **Sensor latency / rate decimation** — sensors currently fire in lockstep with the
+   control loop; real sensors run async with 20–50 ms latency.
+3. **Motor model** — no spin-up time constant, thrust saturation curve, or actuator delay.
+4. **Controller hardware tuning** — PID gains tuned against perfect feedback; needs a
+   noise + latency injection / hardware-in-the-loop pass.
+5. **Camera-only support** — an 87° FOV halves coverage; camera-only hardware needs
+   yaw-sweep scanning + short-term obstacle memory.
+6. **ROS 2 deployment** — `aetherscan_ws/` is scaffolding, not a validated flight stack.
+
+See [ROADMAP.md](ROADMAP.md) for the phased plan.
 
 ---
 
 ## License
 
-MIT License — See [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE).
