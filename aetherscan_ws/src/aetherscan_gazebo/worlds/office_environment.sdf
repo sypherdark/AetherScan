@@ -1,0 +1,444 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="office_environment">
+    <physics name="1ms" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-altimeter-system" name="gz::sim::systems::Altimeter"/>
+
+    <!-- Ambient lighting -->
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.78 1</diffuse>
+      <specular>0.3 0.3 0.3 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.2 -0.9</direction>
+    </light>
+
+    <!-- Indoor ceiling lights -->
+    <light type="point" name="office_light_1">
+      <pose>5 4 2.8 0 0 0</pose>
+      <diffuse>1 0.95 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>12</range>
+        <constant>0.5</constant>
+        <linear>0.1</linear>
+        <quadratic>0.02</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="point" name="office_light_2">
+      <pose>10 4 2.8 0 0 0</pose>
+      <diffuse>1 0.95 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>12</range>
+        <constant>0.5</constant>
+        <linear>0.1</linear>
+        <quadratic>0.02</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="point" name="office_light_3">
+      <pose>5 10 2.8 0 0 0</pose>
+      <diffuse>1 0.95 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>12</range>
+        <constant>0.5</constant>
+        <linear>0.1</linear>
+        <quadratic>0.02</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="point" name="corridor_light">
+      <pose>15 7.5 2.8 0 0 0</pose>
+      <diffuse>0.9 0.9 1 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>10</range>
+        <constant>0.5</constant>
+        <linear>0.1</linear>
+        <quadratic>0.02</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <!-- Ground Plane -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>30 20</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>30 20</size></plane></geometry>
+          <material>
+            <ambient>0.6 0.58 0.55 1</ambient>
+            <diffuse>0.65 0.63 0.6 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Outer Walls (20m x 15m office space) -->
+    <!-- North Wall -->
+    <model name="wall_north">
+      <static>true</static>
+      <pose>10 15 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>20 0.15 3.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>20 0.15 3.0</size></box></geometry>
+          <material>
+            <ambient>0.9 0.9 0.88 1</ambient>
+            <diffuse>0.95 0.93 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- South Wall -->
+    <model name="wall_south">
+      <static>true</static>
+      <pose>10 0 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>20 0.15 3.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>20 0.15 3.0</size></box></geometry>
+          <material>
+            <ambient>0.9 0.9 0.88 1</ambient>
+            <diffuse>0.95 0.93 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- East Wall -->
+    <model name="wall_east">
+      <static>true</static>
+      <pose>20 7.5 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.15 15 3.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.15 15 3.0</size></box></geometry>
+          <material>
+            <ambient>0.9 0.9 0.88 1</ambient>
+            <diffuse>0.95 0.93 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- West Wall -->
+    <model name="wall_west">
+      <static>true</static>
+      <pose>0 7.5 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.15 15 3.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.15 15 3.0</size></box></geometry>
+          <material>
+            <ambient>0.9 0.9 0.88 1</ambient>
+            <diffuse>0.95 0.93 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Ceiling -->
+    <model name="ceiling">
+      <static>true</static>
+      <pose>10 7.5 3.0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>20 15 0.1</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>20 15 0.1</size></box></geometry>
+          <material>
+            <ambient>0.95 0.95 0.95 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Internal Walls - Creating rooms -->
+    <!-- Corridor wall (divides north rooms from south rooms) -->
+    <model name="wall_corridor_south">
+      <static>true</static>
+      <pose>8 5 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>12 0.12 3.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>12 0.12 3.0</size></box></geometry>
+          <material>
+            <ambient>0.88 0.88 0.85 1</ambient>
+            <diffuse>0.92 0.9 0.88 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_corridor_north">
+      <static>true</static>
+      <pose>8 10 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>12 0.12 3.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>12 0.12 3.0</size></box></geometry>
+          <material>
+            <ambient>0.88 0.88 0.85 1</ambient>
+            <diffuse>0.92 0.9 0.88 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Room dividers -->
+    <model name="wall_room_1">
+      <static>true</static>
+      <pose>7 2.5 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.12 5 3.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.12 5 3.0</size></box></geometry>
+          <material>
+            <ambient>0.88 0.88 0.85 1</ambient>
+            <diffuse>0.92 0.9 0.88 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_room_2">
+      <static>true</static>
+      <pose>7 12.5 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.12 5 3.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.12 5 3.0</size></box></geometry>
+          <material>
+            <ambient>0.88 0.88 0.85 1</ambient>
+            <diffuse>0.92 0.9 0.88 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Office Furniture -->
+    <!-- Desk 1 -->
+    <model name="desk_1">
+      <static>true</static>
+      <pose>3 2.5 0.37 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.4 0.7 0.74</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.4 0.7 0.74</size></box></geometry>
+          <material>
+            <ambient>0.55 0.35 0.2 1</ambient>
+            <diffuse>0.6 0.4 0.25 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Desk 2 -->
+    <model name="desk_2">
+      <static>true</static>
+      <pose>3 12 0.37 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.4 0.7 0.74</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.4 0.7 0.74</size></box></geometry>
+          <material>
+            <ambient>0.55 0.35 0.2 1</ambient>
+            <diffuse>0.6 0.4 0.25 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Desk 3 -->
+    <model name="desk_3">
+      <static>true</static>
+      <pose>12 2.5 0.37 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.6 0.8 0.74</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.6 0.8 0.74</size></box></geometry>
+          <material>
+            <ambient>0.4 0.4 0.4 1</ambient>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Bookshelf -->
+    <model name="bookshelf_1">
+      <static>true</static>
+      <pose>1 7.5 1.0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.35 1.2 2.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.35 1.2 2.0</size></box></geometry>
+          <material>
+            <ambient>0.45 0.3 0.15 1</ambient>
+            <diffuse>0.5 0.35 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Chairs -->
+    <model name="chair_1">
+      <static>true</static>
+      <pose>3 3.3 0.23 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.45 0.45 0.46</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.45 0.45 0.46</size></box></geometry>
+          <material>
+            <ambient>0.15 0.15 0.15 1</ambient>
+            <diffuse>0.2 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="chair_2">
+      <static>true</static>
+      <pose>12 3.3 0.23 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.45 0.45 0.46</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.45 0.45 0.46</size></box></geometry>
+          <material>
+            <ambient>0.15 0.15 0.15 1</ambient>
+            <diffuse>0.2 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Filing Cabinet -->
+    <model name="filing_cabinet">
+      <static>true</static>
+      <pose>19 2 0.6 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.45 0.6 1.2</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.45 0.6 1.2</size></box></geometry>
+          <material>
+            <ambient>0.5 0.5 0.5 1</ambient>
+            <diffuse>0.6 0.6 0.6 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Whiteboard on wall -->
+    <model name="whiteboard">
+      <static>true</static>
+      <pose>10 14.9 1.5 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>2.0 0.03 1.2</size></box></geometry>
+          <material>
+            <ambient>0.95 0.95 0.95 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Potted Plant -->
+    <model name="plant_1">
+      <static>true</static>
+      <pose>18 13 0.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.2</radius><length>0.8</length></cylinder></geometry>
+        </collision>
+        <visual name="pot">
+          <pose>0 0 -0.2 0 0 0</pose>
+          <geometry><cylinder><radius>0.15</radius><length>0.3</length></cylinder></geometry>
+          <material>
+            <ambient>0.5 0.3 0.15 1</ambient>
+            <diffuse>0.6 0.35 0.2 1</diffuse>
+          </material>
+        </visual>
+        <visual name="leaves">
+          <pose>0 0 0.15 0 0 0</pose>
+          <geometry><sphere><radius>0.25</radius></sphere></geometry>
+          <material>
+            <ambient>0.1 0.5 0.15 1</ambient>
+            <diffuse>0.15 0.6 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Drone spawn pose -->
+    <include>
+      <uri>model://aetherscan_drone</uri>
+      <name>aetherscan</name>
+      <pose>2 7.5 0.2 0 0 0</pose>
+    </include>
+
+  </world>
+</sdf>

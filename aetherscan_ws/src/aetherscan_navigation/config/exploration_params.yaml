@@ -1,0 +1,84 @@
+###############################################################################
+# Autonomous Exploration & Navigation Configuration for AetherScan
+###############################################################################
+
+exploration:
+  ros__parameters:
+    # --- Frontier Detection ---
+    frontier:
+      min_frontier_size: 10                # Min points to consider a valid frontier
+      max_frontier_distance: 8.0           # meters – ignore frontiers farther away
+      frontier_filter_radius: 0.3          # meters – cluster nearby frontier cells
+      detection_rate_hz: 2.0               # How often to detect frontiers
+      occupancy_threshold: 0.65            # Probability above this = occupied
+      free_threshold: 0.35                 # Probability below this = free
+
+    # --- Frontier Scoring Weights ---
+    scoring:
+      information_gain_weight: 0.5         # Prefer frontiers with more unknown space
+      distance_weight: 0.3                 # Prefer closer frontiers
+      safety_weight: 0.2                   # Prefer frontiers away from obstacles
+      revisit_penalty: 0.8                 # Penalty for revisiting explored regions
+      min_information_gain: 0.05           # Ignore low-gain frontiers
+
+    # --- Coverage Planning ---
+    coverage:
+      overlap_ratio: 0.2                   # 20% overlap between passes
+      sweep_spacing: 1.5                   # meters – distance between sweep lines
+      altitude_layers: [1.0, 2.0, 3.0]    # meters – scanning altitudes
+      boundary_margin: 0.5                 # meters – margin from walls
+      pattern: "boustrophedon"             # "boustrophedon" or "spiral"
+
+    # --- Safety ---
+    safety:
+      min_obstacle_distance: 0.5           # meters – hard safety boundary
+      preferred_obstacle_distance: 1.0     # meters – comfortable distance
+      max_tilt_angle: 15.0                 # degrees
+      emergency_stop_distance: 0.3         # meters – triggers e-stop
+      geofence_enabled: true
+      geofence_bounds:                     # Operating envelope (meters, relative to start)
+        x_min: -25.0
+        x_max: 25.0
+        y_min: -25.0
+        y_max: 25.0
+        z_min: 0.3
+        z_max: 4.0
+
+    # --- Speed & Dynamics ---
+    dynamics:
+      max_linear_speed: 1.0               # m/s
+      max_angular_speed: 1.0              # rad/s
+      max_vertical_speed: 0.5             # m/s
+      exploration_speed: 0.5              # m/s – speed during exploration
+      approach_speed: 0.3                 # m/s – speed near obstacles
+      acceleration_limit: 0.5             # m/s²
+
+    # --- Return-to-Home ---
+    return_home:
+      battery_threshold: 0.15             # Return when battery below 15%
+      coverage_complete_threshold: 0.95   # 95% coverage = complete
+      max_exploration_time: 1800.0        # seconds – 30 min max
+      home_position: [0.0, 0.0, 1.0]     # meters – takeoff position
+
+    # --- Path Planning ---
+    path_planning:
+      algorithm: "rrt_star"               # "rrt_star" or "a_star"
+      max_iterations: 5000
+      step_size: 0.3                      # meters
+      goal_tolerance: 0.3                 # meters
+      replan_frequency_hz: 2.0
+      path_smoothing: true
+      smoothing_iterations: 50
+      voxel_resolution: 0.1               # meters – 3D grid resolution for planning
+
+    # --- Obstacle Avoidance ---
+    obstacle_avoidance:
+      method: "vfh_plus"                  # "potential_field" or "vfh_plus"
+      update_rate_hz: 20.0
+      sensor_range: 5.0                   # meters
+      num_angular_sectors: 72             # VFH histogram resolution
+      safety_radius: 0.35                 # meters – drone radius + margin
+      wide_opening_threshold: 0.8         # radians
+      narrow_opening_threshold: 0.4       # radians
+      obstacle_weight: 5.0
+      goal_weight: 3.0

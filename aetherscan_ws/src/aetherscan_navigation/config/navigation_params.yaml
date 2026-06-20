@@ -1,0 +1,31 @@
+# Exploration parameters
+frontier_explorer:
+  ros__parameters:
+    scan_altitude: 1.5
+    min_frontier_size: 5
+    exploration_radius: 15.0
+    safety_margin: 0.5
+    information_gain_weight: 1.0
+    distance_weight: 0.3
+    coverage_threshold: 0.95
+    frontier_update_rate: 1.0
+    home_position: [2.0, 7.5, 0.2]
+
+path_planner:
+  ros__parameters:
+    step_size: 0.5
+    max_iterations: 2000
+    goal_tolerance: 0.3
+    bounds_min: [-1.0, -1.0, 0.3]
+    bounds_max: [25.0, 20.0, 3.5]
+    smoothing_iterations: 50
+
+obstacle_avoidance:
+  ros__parameters:
+    safety_distance: 0.8
+    critical_distance: 0.3
+    max_velocity: 1.5
+    avoidance_gain: 2.0
+    num_sectors: 36
+    min_altitude: 0.4
+    max_altitude: 3.5

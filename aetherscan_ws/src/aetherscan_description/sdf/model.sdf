@@ -1,0 +1,379 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <model name="aetherscan_drone">
+    <pose>0 0 0.2 0 0 0</pose>
+    <self_collide>false</self_collide>
+    <static>false</static>
+
+    <link name="base_link">
+      <inertial>
+        <mass>1.5</mass>
+        <inertia>
+          <ixx>0.0119</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.0119</iyy><iyz>0</iyz>
+          <izz>0.0234</izz>
+        </inertia>
+      </inertial>
+
+      <collision name="body_collision">
+        <geometry>
+          <box><size>0.30 0.30 0.08</size></box>
+        </geometry>
+      </collision>
+
+      <visual name="body_visual">
+        <geometry>
+          <box><size>0.30 0.30 0.08</size></box>
+        </geometry>
+        <material>
+          <ambient>0.15 0.15 0.15 1</ambient>
+          <diffuse>0.2 0.2 0.2 1</diffuse>
+          <specular>0.3 0.3 0.3 1</specular>
+        </material>
+      </visual>
+
+      <!-- LED indicators -->
+      <visual name="led_front">
+        <pose>0.14 0 -0.02 0 0 0</pose>
+        <geometry><sphere><radius>0.005</radius></sphere></geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+          <emissive>0 0.8 0 1</emissive>
+        </material>
+      </visual>
+
+      <visual name="led_rear">
+        <pose>-0.14 0 -0.02 0 0 0</pose>
+        <geometry><sphere><radius>0.005</radius></sphere></geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <emissive>0.8 0 0 1</emissive>
+        </material>
+      </visual>
+
+      <!-- IMU Sensor -->
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>200</update_rate>
+        <imu>
+          <angular_velocity>
+            <x><noise type="gaussian"><mean>0</mean><stddev>0.0002</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0</mean><stddev>0.0002</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0</mean><stddev>0.0002</stddev></noise></z>
+          </angular_velocity>
+          <linear_acceleration>
+            <x><noise type="gaussian"><mean>0</mean><stddev>0.017</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0</mean><stddev>0.017</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0</mean><stddev>0.017</stddev></noise></z>
+          </linear_acceleration>
+        </imu>
+        <topic>/aetherscan/imu</topic>
+      </sensor>
+
+      <!-- Altimeter/Barometer -->
+      <sensor name="altimeter" type="altimeter">
+        <always_on>true</always_on>
+        <update_rate>50</update_rate>
+        <altimeter>
+          <vertical_position>
+            <noise type="gaussian"><mean>0</mean><stddev>0.01</stddev></noise>
+          </vertical_position>
+          <vertical_velocity>
+            <noise type="gaussian"><mean>0</mean><stddev>0.01</stddev></noise>
+          </vertical_velocity>
+        </altimeter>
+        <topic>/aetherscan/altimeter</topic>
+      </sensor>
+    </link>
+
+    <!-- Front-Left Rotor -->
+    <link name="rotor_fl">
+      <pose>0.15 0.15 0.05 0 0 0</pose>
+      <inertial>
+        <mass>0.02</mass>
+        <inertia>
+          <ixx>0.00002</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.00002</iyy><iyz>0</iyz>
+          <izz>0.00004</izz>
+        </inertia>
+      </inertial>
+      <visual name="rotor_fl_visual">
+        <geometry><cylinder><radius>0.0635</radius><length>0.005</length></cylinder></geometry>
+        <material>
+          <ambient>0 0.4 0.7 0.8</ambient>
+          <diffuse>0 0.5 0.8 0.8</diffuse>
+        </material>
+      </visual>
+      <collision name="rotor_fl_collision">
+        <geometry><cylinder><radius>0.0635</radius><length>0.005</length></cylinder></geometry>
+      </collision>
+    </link>
+    <joint name="rotor_fl_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>rotor_fl</child>
+      <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis>
+    </joint>
+
+    <!-- Front-Right Rotor -->
+    <link name="rotor_fr">
+      <pose>0.15 -0.15 0.05 0 0 0</pose>
+      <inertial>
+        <mass>0.02</mass>
+        <inertia>
+          <ixx>0.00002</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.00002</iyy><iyz>0</iyz>
+          <izz>0.00004</izz>
+        </inertia>
+      </inertial>
+      <visual name="rotor_fr_visual">
+        <geometry><cylinder><radius>0.0635</radius><length>0.005</length></cylinder></geometry>
+        <material>
+          <ambient>0 0.4 0.7 0.8</ambient>
+          <diffuse>0 0.5 0.8 0.8</diffuse>
+        </material>
+      </visual>
+    </link>
+    <joint name="rotor_fr_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>rotor_fr</child>
+      <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis>
+    </joint>
+
+    <!-- Rear-Left Rotor -->
+    <link name="rotor_rl">
+      <pose>-0.15 0.15 0.05 0 0 0</pose>
+      <inertial>
+        <mass>0.02</mass>
+        <inertia>
+          <ixx>0.00002</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.00002</iyy><iyz>0</iyz>
+          <izz>0.00004</izz>
+        </inertia>
+      </inertial>
+      <visual name="rotor_rl_visual">
+        <geometry><cylinder><radius>0.0635</radius><length>0.005</length></cylinder></geometry>
+        <material>
+          <ambient>0 0.4 0.7 0.8</ambient>
+          <diffuse>0 0.5 0.8 0.8</diffuse>
+        </material>
+      </visual>
+    </link>
+    <joint name="rotor_rl_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>rotor_rl</child>
+      <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis>
+    </joint>
+
+    <!-- Rear-Right Rotor -->
+    <link name="rotor_rr">
+      <pose>-0.15 -0.15 0.05 0 0 0</pose>
+      <inertial>
+        <mass>0.02</mass>
+        <inertia>
+          <ixx>0.00002</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.00002</iyy><iyz>0</iyz>
+          <izz>0.00004</izz>
+        </inertia>
+      </inertial>
+      <visual name="rotor_rr_visual">
+        <geometry><cylinder><radius>0.0635</radius><length>0.005</length></cylinder></geometry>
+        <material>
+          <ambient>0 0.4 0.7 0.8</ambient>
+          <diffuse>0 0.5 0.8 0.8</diffuse>
+        </material>
+      </visual>
+    </link>
+    <joint name="rotor_rr_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>rotor_rr</child>
+      <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis>
+    </joint>
+
+    <!-- Camera Link (RGB-D) -->
+    <link name="camera_link">
+      <pose>0.15 0 -0.02 0 0.26 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.0001</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.0001</iyy><iyz>0</iyz>
+          <izz>0.0001</izz>
+        </inertia>
+      </inertial>
+      <visual name="camera_visual">
+        <geometry><box><size>0.025 0.09 0.025</size></box></geometry>
+        <material>
+          <ambient>0.5 0.5 0.5 1</ambient>
+          <diffuse>0.6 0.6 0.6 1</diffuse>
+        </material>
+      </visual>
+      <sensor name="rgbd_camera" type="rgbd_camera">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <camera>
+          <horizontal_fov>1.518</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip><near>0.1</near><far>10.0</far></clip>
+          <depth_camera>
+            <clip><near>0.1</near><far>10.0</far></clip>
+          </depth_camera>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.007</stddev>
+          </noise>
+        </camera>
+        <topic>/aetherscan/camera</topic>
+      </sensor>
+    </link>
+    <joint name="camera_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>camera_link</child>
+    </joint>
+
+    <!-- 3D LiDAR -->
+    <link name="lidar_link">
+      <pose>0 0 0.076 0 0 0</pose>
+      <inertial>
+        <mass>0.3</mass>
+        <inertia>
+          <ixx>0.0002</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.0002</iyy><iyz>0</iyz>
+          <izz>0.0003</izz>
+        </inertia>
+      </inertial>
+      <visual name="lidar_visual">
+        <geometry><cylinder><radius>0.0425</radius><length>0.072</length></cylinder></geometry>
+        <material>
+          <ambient>0.1 0.1 0.1 1</ambient>
+          <diffuse>0.15 0.15 0.15 1</diffuse>
+          <specular>0.4 0.4 0.4 1</specular>
+        </material>
+      </visual>
+      <sensor name="lidar_3d" type="gpu_lidar">
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+        <topic>/aetherscan/lidar</topic>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>360</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159265</min_angle>
+              <max_angle>3.14159265</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>16</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.261799</min_angle>
+              <max_angle>0.261799</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.3</min>
+            <max>20.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.005</stddev>
+          </noise>
+        </lidar>
+      </sensor>
+    </link>
+    <joint name="lidar_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>lidar_link</child>
+    </joint>
+
+    <!-- Downward Rangefinder -->
+    <link name="rangefinder_link">
+      <pose>0 0 -0.05 0 1.5708 0</pose>
+      <inertial>
+        <mass>0.01</mass>
+        <inertia>
+          <ixx>0.00001</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.00001</iyy><iyz>0</iyz>
+          <izz>0.00001</izz>
+        </inertia>
+      </inertial>
+      <sensor name="downward_rangefinder" type="ray">
+        <always_on>true</always_on>
+        <update_rate>50</update_rate>
+        <topic>/aetherscan/rangefinder</topic>
+        <ray>
+          <scan>
+            <horizontal><samples>1</samples><resolution>1</resolution>
+              <min_angle>0</min_angle><max_angle>0</max_angle>
+            </horizontal>
+          </scan>
+          <range><min>0.05</min><max>8.0</max><resolution>0.001</resolution></range>
+          <noise><type>gaussian</type><mean>0</mean><stddev>0.005</stddev></noise>
+        </ray>
+      </sensor>
+    </link>
+    <joint name="rangefinder_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>rangefinder_link</child>
+    </joint>
+
+    <!-- Plugins -->
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>aetherscan</robotNamespace>
+      <jointName>rotor_fl_joint</jointName>
+      <linkName>rotor_fl</linkName>
+      <turningDirection>ccw</turningDirection>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <maxRotVelocity>1500</maxRotVelocity>
+      <motorConstant>5.84e-06</motorConstant>
+      <momentConstant>0.06</momentConstant>
+      <commandSubTopic>command/motor_speed</commandSubTopic>
+      <motorNumber>0</motorNumber>
+      <rotorDragCoefficient>2.0673e-04</rotorDragCoefficient>
+      <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      <motorType>velocity</motorType>
+    </plugin>
+
+    <plugin filename="gz-sim-multicopter-control-system"
+            name="gz::sim::systems::MulticopterVelocityControl">
+      <robotNamespace>aetherscan</robotNamespace>
+      <commandTopic>cmd_vel</commandTopic>
+      <enableSubTopic>enable</enableSubTopic>
+      <comLinkName>base_link</comLinkName>
+      <velocityGain>
+        <linear>5 5 5</linear>
+        <angular>3 3 2</angular>
+      </velocityGain>
+      <maximumLinearAcceleration>2 2 3</maximumLinearAcceleration>
+      <maximumAngularAcceleration>3 3 3</maximumAngularAcceleration>
+      <maximumLinearVelocity>1.5 1.5 0.5</maximumLinearVelocity>
+      <maximumAngularVelocity>1.0 1.0 1.0</maximumAngularVelocity>
+    </plugin>
+
+    <plugin filename="gz-sim-odometry-publisher-system"
+            name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>odom</odom_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <odom_topic>/aetherscan/odom</odom_topic>
+      <dimensions>3</dimensions>
+    </plugin>
+
+    <plugin filename="gz-sim-pose-publisher-system"
+            name="gz::sim::systems::PosePublisher">
+      <publish_link_pose>true</publish_link_pose>
+      <publish_nested_model_pose>true</publish_nested_model_pose>
+      <update_frequency>50</update_frequency>
+    </plugin>
+
+  </model>
+</sdf>

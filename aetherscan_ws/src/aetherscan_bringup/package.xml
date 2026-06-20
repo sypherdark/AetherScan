@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>aetherscan_bringup</name>
+  <version>1.0.0</version>
+  <description>Top-level launch files for AetherScan system</description>
+  <maintainer email="dev@aetherscan.io">AetherScan Team</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>aetherscan_description</exec_depend>
+  <exec_depend>aetherscan_gazebo</exec_depend>
+  <exec_depend>aetherscan_slam</exec_depend>
+  <exec_depend>aetherscan_navigation</exec_depend>
+  <exec_depend>aetherscan_control</exec_depend>
+  <exec_depend>aetherscan_teleop</exec_depend>
+  <exec_depend>aetherscan_mission</exec_depend>
+  <exec_depend>rosbridge_server</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

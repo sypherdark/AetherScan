@@ -1,0 +1,36 @@
+# AetherScan — unified stack (simulation + dashboard)
+# Browser: http://localhost:3000  |  Rosbridge: ws://localhost:9090
+
+services:
+  aetherscan:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    platform: linux/amd64
+    container_name: aetherscan-simulation
+    environment:
+      - ROS_DOMAIN_ID=42
+    ports:
+      - "9090:9090"
+    networks:
+      - aetherscan-net
+    command: >
+      bash -c "ros2 launch aetherscan_bringup simulation_docker.launch.py"
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dashboard
+    container_name: aetherscan-dashboard
+    environment:
+      - NEXT_PUBLIC_ROSBRIDGE_URL=ws://localhost:9090
+    ports:
+      - "3000:3000"
+    depends_on:
+      - aetherscan
+    networks:
+      - aetherscan-net
+
+networks:
+  aetherscan-net:
+    driver: bridge

@@ -1,0 +1,572 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <world name="apartment">
+
+    <!-- ============================================================ -->
+    <!--  PHYSICS                                                      -->
+    <!-- ============================================================ -->
+    <physics type="ode">
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>500</real_time_update_rate>
+    </physics>
+
+    <!-- ============================================================ -->
+    <!--  PLUGINS                                                      -->
+    <!-- ============================================================ -->
+    <plugin filename="gz-sim-physics-system"        name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-user-commands-system"  name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-sensors-system"        name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system"            name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-altimeter-system"      name="gz::sim::systems::Altimeter"/>
+    <plugin filename="gz-sim-contact-system"        name="gz::sim::systems::Contact"/>
+
+    <!-- ============================================================ -->
+    <!--  SCENE & LIGHTING                                             -->
+    <!-- ============================================================ -->
+    <scene>
+      <ambient>0.45 0.45 0.45 1.0</ambient>
+      <background>0.8 0.85 0.95 1.0</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <!--
+      Apartment layout (~10m x 7m = 70 sq m):
+      ┌───────────────────────────────────────┐
+      │  Bedroom (4x3.5)  │  Bathroom (2x3.5) │  y=7
+      │                   │                   │
+      │         door      │      door         │
+      ├─────────┬─────────┼───────────────────┤  y=3.5
+      │ Kitchen │  Living Room (6x3.5)        │
+      │ (4x3.5) │                             │
+      │   door  │                             │
+      └─────────┴─────────────────────────────┘  y=0
+      x=0       x=4                          x=10
+    -->
+
+    <!-- Warm overhead light -->
+    <light type="directional" name="sun_indirect">
+      <pose>5 3.5 2.6 0 0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <diffuse>0.85 0.82 0.72 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>20</range>
+        <constant>0.3</constant>
+        <linear>0.01</linear>
+        <quadratic>0.002</quadratic>
+      </attenuation>
+      <direction>0.1 0.1 -1.0</direction>
+    </light>
+
+    <!-- Room lights -->
+    <light type="point" name="living_room_light">
+      <pose>7 1.75 2.4 0 0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <diffuse>0.95 0.9 0.75 1</diffuse>
+      <attenuation><range>8</range><constant>0.3</constant><linear>0.08</linear><quadratic>0.02</quadratic></attenuation>
+    </light>
+    <light type="point" name="kitchen_light">
+      <pose>2 1.75 2.4 0 0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <diffuse>0.95 0.92 0.82 1</diffuse>
+      <attenuation><range>6</range><constant>0.3</constant><linear>0.1</linear><quadratic>0.03</quadratic></attenuation>
+    </light>
+    <light type="point" name="bedroom_light">
+      <pose>2 5.25 2.4 0 0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <diffuse>0.9 0.85 0.7 1</diffuse>
+      <attenuation><range>6</range><constant>0.3</constant><linear>0.1</linear><quadratic>0.03</quadratic></attenuation>
+    </light>
+    <light type="point" name="bathroom_light">
+      <pose>5.5 5.25 2.4 0 0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <diffuse>0.95 0.95 0.95 1</diffuse>
+      <attenuation><range>5</range><constant>0.3</constant><linear>0.12</linear><quadratic>0.04</quadratic></attenuation>
+    </light>
+
+    <!-- ============================================================ -->
+    <!--  GROUND & FLOOR                                               -->
+    <!-- ============================================================ -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry>
+          <material><ambient>0.4 0.4 0.38 1</ambient><diffuse>0.45 0.45 0.43 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Living room floor (hardwood) -->
+    <model name="floor_living">
+      <static>true</static>
+      <pose>7 1.75 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><box><size>6 3.5 0.002</size></box></geometry>
+          <material><ambient>0.55 0.40 0.25 1</ambient><diffuse>0.6 0.45 0.3 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+      </link>
+    </model>
+    <!-- Kitchen floor (tile) -->
+    <model name="floor_kitchen">
+      <static>true</static>
+      <pose>2 1.75 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><box><size>4 3.5 0.002</size></box></geometry>
+          <material><ambient>0.75 0.73 0.7 1</ambient><diffuse>0.8 0.78 0.75 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+      </link>
+    </model>
+    <!-- Bedroom floor (carpet) -->
+    <model name="floor_bedroom">
+      <static>true</static>
+      <pose>2 5.25 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><box><size>4 3.5 0.002</size></box></geometry>
+          <material><ambient>0.5 0.48 0.45 1</ambient><diffuse>0.55 0.53 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <!-- Bathroom floor (white tile) -->
+    <model name="floor_bathroom">
+      <static>true</static>
+      <pose>5.5 5.25 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><box><size>3 3.5 0.002</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse><specular>0.35 0.35 0.35 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!--  CEILING (2.7m)                                               -->
+    <!-- ============================================================ -->
+    <model name="ceiling">
+      <static>true</static>
+      <pose>5 3.5 2.7 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>10 7 0.05</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>10 7 0.05</size></box></geometry>
+          <material><ambient>0.92 0.92 0.9 1</ambient><diffuse>0.95 0.95 0.93 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!--  EXTERIOR WALLS (10m x 7m, 2.7m high, 0.15m thick)           -->
+    <!-- ============================================================ -->
+    <model name="wall_south">
+      <static>true</static><pose>5 0 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>10 0.15 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>10 0.15 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_north">
+      <static>true</static><pose>5 7 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>10 0.15 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>10 0.15 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_west">
+      <static>true</static><pose>0 3.5 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.15 7 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.15 7 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_east">
+      <static>true</static><pose>7 3.5 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.15 7 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.15 7 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!--  INTERIOR WALLS                                               -->
+    <!-- ============================================================ -->
+
+    <!-- Kitchen / Living room divider at x=4, y=0..3.5 (door at y=1.5..2.3) -->
+    <model name="wall_kl_bottom">
+      <static>true</static><pose>4 0.75 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.12 1.5 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.12 1.5 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_kl_top">
+      <static>true</static><pose>4 2.9 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.12 1.2 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.12 1.2 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_kl_header">
+      <static>true</static><pose>4 1.9 2.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.12 0.8 0.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.12 0.8 0.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Horizontal wall at y=3.5 (separating lower/upper floors) -->
+    <!-- Kitchen-to-Bedroom wall x=0..4 (door at x=1.5..2.3) -->
+    <model name="wall_kb_left">
+      <static>true</static><pose>0.75 3.5 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.5 0.12 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>1.5 0.12 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_kb_right">
+      <static>true</static><pose>3.15 3.5 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.7 0.12 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>1.7 0.12 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_kb_header">
+      <static>true</static><pose>1.9 3.5 2.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.8 0.12 0.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.8 0.12 0.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Living-to-Bathroom/Bedroom corridor wall at y=3.5, x=4..7 (door at x=5..5.8) -->
+    <model name="wall_lb_left">
+      <static>true</static><pose>4.5 3.5 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.0 0.12 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>1.0 0.12 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_lb_right">
+      <static>true</static><pose>6.4 3.5 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.2 0.12 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>1.2 0.12 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_lb_header">
+      <static>true</static><pose>5.4 3.5 2.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.8 0.12 0.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.8 0.12 0.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Bedroom / Bathroom divider at x=4, y=3.5..7 (door at y=4.5..5.3) -->
+    <model name="wall_bb_bottom">
+      <static>true</static><pose>4 4 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.12 1.0 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.12 1.0 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_bb_top">
+      <static>true</static><pose>4 6.15 1.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.12 1.7 2.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.12 1.7 2.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_bb_header">
+      <static>true</static><pose>4 4.9 2.35 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.12 0.8 0.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.12 0.8 0.7</size></box></geometry>
+          <material><ambient>0.88 0.86 0.82 1</ambient><diffuse>0.92 0.9 0.86 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!--  LIVING ROOM FURNITURE                                        -->
+    <!-- ============================================================ -->
+    <!-- Sofa -->
+    <model name="sofa">
+      <static>true</static>
+      <pose>6.5 0.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.8 0.8 0.5</size></box></geometry></collision>
+        <visual name="vis_seat"><geometry><box><size>1.8 0.8 0.35</size></box></geometry>
+          <material><ambient>0.35 0.3 0.45 1</ambient><diffuse>0.4 0.35 0.5 1</diffuse></material>
+        </visual>
+        <visual name="vis_back"><pose>0 -0.35 0.25 0 0 0</pose><geometry><box><size>1.8 0.1 0.5</size></box></geometry>
+          <material><ambient>0.35 0.3 0.45 1</ambient><diffuse>0.4 0.35 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Coffee table -->
+    <model name="coffee_table">
+      <static>true</static>
+      <pose>6.5 1.5 0.2 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.9 0.5 0.4</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.9 0.5 0.4</size></box></geometry>
+          <material><ambient>0.4 0.3 0.18 1</ambient><diffuse>0.45 0.35 0.22 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- TV stand + TV -->
+    <model name="tv_stand">
+      <static>true</static>
+      <pose>6.5 3.1 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.2 0.4 0.5</size></box></geometry></collision>
+        <visual name="vis_stand"><geometry><box><size>1.2 0.4 0.5</size></box></geometry>
+          <material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material>
+        </visual>
+        <visual name="vis_tv"><pose>0 0 0.5 0 0 0</pose><geometry><box><size>1.0 0.05 0.6</size></box></geometry>
+          <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Bookshelf -->
+    <model name="bookshelf_living">
+      <static>true</static>
+      <pose>4.3 1.75 0.8 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.3 1.0 1.6</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.3 1.0 1.6</size></box></geometry>
+          <material><ambient>0.5 0.38 0.22 1</ambient><diffuse>0.55 0.42 0.27 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!--  KITCHEN FURNITURE                                            -->
+    <!-- ============================================================ -->
+    <!-- Kitchen counter along west wall -->
+    <model name="kitchen_counter">
+      <static>true</static>
+      <pose>0.35 1.75 0.45 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.55 2.5 0.9</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.55 2.5 0.9</size></box></geometry>
+          <material><ambient>0.8 0.8 0.78 1</ambient><diffuse>0.85 0.85 0.83 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Refrigerator -->
+    <model name="fridge">
+      <static>true</static>
+      <pose>0.35 3.1 0.85 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.6 0.6 1.7</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.6 0.6 1.7</size></box></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.75 0.75 0.75 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Small dining table -->
+    <model name="dining_table">
+      <static>true</static>
+      <pose>2.5 1.2 0.37 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.8 0.8 0.74</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.8 0.8 0.74</size></box></geometry>
+          <material><ambient>0.5 0.4 0.25 1</ambient><diffuse>0.55 0.45 0.3 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="dining_chair_1">
+      <static>true</static><pose>2.1 0.7 0.22 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.4 0.4 0.44</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.4 0.4 0.44</size></box></geometry>
+          <material><ambient>0.5 0.4 0.25 1</ambient><diffuse>0.55 0.45 0.3 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="dining_chair_2">
+      <static>true</static><pose>2.9 0.7 0.22 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.4 0.4 0.44</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.4 0.4 0.44</size></box></geometry>
+          <material><ambient>0.5 0.4 0.25 1</ambient><diffuse>0.55 0.45 0.3 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!--  BEDROOM FURNITURE                                            -->
+    <!-- ============================================================ -->
+    <!-- Bed -->
+    <model name="bed">
+      <static>true</static>
+      <pose>1.5 5.5 0.3 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.6 2.0 0.6</size></box></geometry></collision>
+        <visual name="vis_frame"><pose>0 0 -0.15 0 0 0</pose><geometry><box><size>1.6 2.0 0.3</size></box></geometry>
+          <material><ambient>0.45 0.35 0.2 1</ambient><diffuse>0.5 0.4 0.25 1</diffuse></material>
+        </visual>
+        <visual name="vis_mattress"><pose>0 0 0.05 0 0 0</pose><geometry><box><size>1.5 1.9 0.2</size></box></geometry>
+          <material><ambient>0.85 0.85 0.82 1</ambient><diffuse>0.9 0.9 0.87 1</diffuse></material>
+        </visual>
+        <visual name="vis_pillow"><pose>0 -0.75 0.2 0 0 0</pose><geometry><box><size>0.5 0.35 0.1</size></box></geometry>
+          <material><ambient>0.9 0.9 0.88 1</ambient><diffuse>0.95 0.95 0.93 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Nightstand -->
+    <model name="nightstand">
+      <static>true</static>
+      <pose>2.8 4.8 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.4 0.35 0.5</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.4 0.35 0.5</size></box></geometry>
+          <material><ambient>0.45 0.35 0.2 1</ambient><diffuse>0.5 0.4 0.25 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Wardrobe -->
+    <model name="wardrobe">
+      <static>true</static>
+      <pose>0.4 5.5 0.95 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.6 1.2 1.9</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.6 1.2 1.9</size></box></geometry>
+          <material><ambient>0.5 0.42 0.3 1</ambient><diffuse>0.55 0.47 0.35 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!--  BATHROOM FURNITURE                                           -->
+    <!-- ============================================================ -->
+    <!-- Bathtub -->
+    <model name="bathtub">
+      <static>true</static>
+      <pose>5.5 6.2 0.3 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.7 1.5 0.6</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.7 1.5 0.6</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Sink vanity -->
+    <model name="bathroom_vanity">
+      <static>true</static>
+      <pose>6.6 4.2 0.4 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.5 0.6 0.8</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.5 0.6 0.8</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Toilet -->
+    <model name="toilet">
+      <static>true</static>
+      <pose>4.5 4.2 0.22 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.4 0.6 0.44</size></box></geometry></collision>
+        <visual name="vis_bowl"><geometry><box><size>0.38 0.55 0.4</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse><specular>0.35 0.35 0.35 1</specular></material>
+        </visual>
+        <visual name="vis_tank"><pose>0 -0.25 0.2 0 0 0</pose><geometry><box><size>0.35 0.15 0.4</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Bathroom mirror (wall mounted) -->
+    <model name="bathroom_mirror">
+      <static>true</static>
+      <pose>6.85 4.2 1.4 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><box><size>0.02 0.5 0.6</size></box></geometry>
+          <material><ambient>0.7 0.8 0.85 1</ambient><diffuse>0.8 0.88 0.92 1</diffuse><specular>0.6 0.6 0.6 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!--  MISCELLANEOUS OBSTACLES                                      -->
+    <!-- ============================================================ -->
+    <!-- Potted plant in living room -->
+    <model name="plant_living">
+      <static>true</static>
+      <pose>4.5 0.4 0.3 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>0.6</length></cylinder></geometry></collision>
+        <visual name="vis_pot"><pose>0 0 -0.12 0 0 0</pose>
+          <geometry><cylinder><radius>0.13</radius><length>0.22</length></cylinder></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.55 0.35 0.2 1</diffuse></material>
+        </visual>
+        <visual name="vis_plant"><pose>0 0 0.1 0 0 0</pose>
+          <geometry><sphere><radius>0.2</radius></sphere></geometry>
+          <material><ambient>0.15 0.45 0.15 1</ambient><diffuse>0.2 0.55 0.2 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Floor lamp -->
+    <model name="floor_lamp">
+      <static>true</static>
+      <pose>5.4 0.4 0.75 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.04</radius><length>1.5</length></cylinder></geometry></collision>
+        <visual name="vis_pole"><geometry><cylinder><radius>0.02</radius><length>1.5</length></cylinder></geometry>
+          <material><ambient>0.3 0.3 0.3 1</ambient><diffuse>0.35 0.35 0.35 1</diffuse></material>
+        </visual>
+        <visual name="vis_shade"><pose>0 0 0.7 0 0 0</pose>
+          <geometry><cylinder><radius>0.15</radius><length>0.2</length></cylinder></geometry>
+          <material><ambient>0.8 0.75 0.65 1</ambient><diffuse>0.85 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

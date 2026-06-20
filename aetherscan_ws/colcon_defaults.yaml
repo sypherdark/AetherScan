@@ -1,0 +1,9 @@
+{
+    "build": {
+        "cmake-args": [
+            "-DCMAKE_BUILD_TYPE=Release"
+        ],
+        "event-handlers": ["console_cohesion+"],
+        "symlink-install": true
+    }
+}

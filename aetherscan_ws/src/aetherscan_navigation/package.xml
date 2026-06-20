@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>aetherscan_navigation</name>
+  <version>1.0.0</version>
+  <description>Autonomous exploration and path planning for AetherScan</description>
+  <maintainer email="dev@aetherscan.io">AetherScan Team</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

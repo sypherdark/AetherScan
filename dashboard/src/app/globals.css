@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #7c90a1;                       /* restrained cold steel */
+  --accent-glow: rgba(124, 144, 161, 0.10);
+  --surface: #131418;
+  --surface-dark: #050506;
+}
+
+body {
+  @apply text-slate-100 antialiased;
+  /* Obsidian base: pure near-black with a faint cold radial vignette so the
+     dark UI reads as "deep" rather than flat. */
+  background:
+    radial-gradient(1200px 800px at 70% -10%, rgba(124, 144, 161, 0.05), transparent 60%),
+    radial-gradient(900px 700px at 0% 110%, rgba(124, 144, 161, 0.04), transparent 55%),
+    #040405;
+  overflow: hidden;
+}
+
+/* Glassmorphism card — deep obsidian glass with a hairline edge */
+.glass-card {
+  background: rgba(14, 15, 18, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.03) inset,
+    0 18px 40px -24px rgba(0, 0, 0, 0.9);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Number animation */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle cold glow for active/accent elements */
+.glow-accent {
+  box-shadow: 0 0 18px var(--accent-glow), 0 0 38px var(--accent-glow);
+}

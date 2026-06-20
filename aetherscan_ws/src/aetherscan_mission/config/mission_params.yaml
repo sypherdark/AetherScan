@@ -1,0 +1,7 @@
+# Mission Controller Parameters
+mission_controller:
+  ros__parameters:
+    takeoff_altitude: 1.5
+    scan_speed: 0.5
+    mission_timeout_sec: 600.0
+    home_position: [2.0, 7.5, 0.2]

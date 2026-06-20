@@ -1,0 +1,81 @@
+###############################################################################
+# General SLAM Pipeline Configuration for AetherScan
+###############################################################################
+
+slam_pipeline:
+  ros__parameters:
+    # --- Voxel Grid Filter ---
+    voxel_filter:
+      leaf_size_x: 0.03                    # meters
+      leaf_size_y: 0.03
+      leaf_size_z: 0.03
+      min_points_per_voxel: 2
+      downsample_all_data: true
+
+    # --- ICP Registration ---
+    icp:
+      max_iterations: 50
+      transformation_epsilon: 1.0e-8
+      euclidean_fitness_epsilon: 1.0e-6
+      max_correspondence_distance: 0.10    # meters
+      use_reciprocal_correspondences: false
+      convergence_criteria:
+        relative_mse: 0.001
+        absolute_mse: 1.0e-12
+        max_iterations: 50
+
+    # --- Point-to-Plane ICP ---
+    icp_point_to_plane:
+      enabled: true
+      normal_estimation_k: 20
+      normal_estimation_radius: 0.10       # meters
+
+    # --- Map Update ---
+    map_update:
+      rate_hz: 1.0                         # Map publish rate
+      min_translation: 0.02                # meters – min movement to trigger update
+      min_rotation: 0.02                   # radians
+      batch_size: 5                        # Number of scans to batch before update
+      use_incremental: true
+
+    # --- Point Cloud Accumulation ---
+    accumulation:
+      max_points: 5000000                  # Max points in accumulated cloud
+      max_range: 10.0                      # meters – discard points beyond this
+      min_range: 0.15                      # meters – discard points closer than this
+      decay_time: 0.0                      # seconds – 0 = no decay
+      overlap_threshold: 0.8              # Skip highly overlapping clouds
+      cloud_timeout: 2.0                   # seconds – discard stale clouds
+
+    # --- Noise Filtering ---
+    noise_filter:
+      statistical:
+        enabled: true
+        mean_k: 50                         # Number of neighbors for mean distance
+        stddev_mul_thresh: 1.0             # Standard deviation multiplier
+      radius:
+        enabled: false
+        search_radius: 0.05               # meters
+        min_neighbors: 5
+
+    # --- Normal Estimation ---
+    normal_estimation:
+      search_radius: 0.08                 # meters
+      k_nearest: 30
+      viewpoint: [0.0, 0.0, 2.0]          # Default viewpoint for normal orientation
+
+    # --- Coordinate Frames ---
+    frames:
+      map_frame: "map"
+      odom_frame: "odom"
+      base_frame: "base_link"
+      lidar_frame: "lidar_link"
+      camera_frame: "camera_link"
+      camera_depth_frame: "camera_depth_optical_frame"
+
+    # --- Performance Tuning ---
+    performance:
+      num_threads: 4
+      use_gpu: false
+      cloud_queue_size: 5
+      tf_timeout: 0.1                      # seconds

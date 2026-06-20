@@ -1,0 +1,57 @@
+# RTAB-Map Parameters for AetherScan 3D Indoor Mapping
+rtabmap:
+  ros__parameters:
+    use_sim_time: true
+    frame_id: "base_link"
+    odom_frame_id: "odom"
+    map_frame_id: "map"
+    subscribe_depth: true
+    subscribe_rgb: true
+    subscribe_scan_cloud: true
+    approx_sync: true
+    queue_size: 10
+
+    # Memory
+    Mem/IncrementalMemory: "true"
+    Mem/InitWMWithAllNodes: "false"
+    Mem/STMSize: "30"
+
+    # Loop Closure
+    Kp/MaxFeatures: "500"
+    Kp/DetectorStrategy: "6"  # ORB
+    Vis/FeatureType: "6"
+    Vis/MaxFeatures: "1000"
+    Vis/MinInliers: "15"
+
+    # Mapping
+    Grid/CellSize: "0.05"
+    Grid/RangeMax: "8.0"
+    Grid/RangeMin: "0.3"
+    Grid/3D: "true"
+    Grid/GroundIsObstacle: "false"
+    GridGlobal/MinSize: "20.0"
+
+    # Optimization
+    Optimizer/Strategy: "1"  # g2o
+    Optimizer/Iterations: "100"
+    Optimizer/Epsilon: "0.00001"
+
+    # RGB-D
+    RGBD/NeighborLinkRefining: "true"
+    RGBD/ProximityBySpace: "true"
+    RGBD/AngularUpdate: "0.05"
+    RGBD/LinearUpdate: "0.05"
+    RGBD/OptimizeFromGraphEnd: "false"
+    RGBD/ProximityMaxGraphDepth: "0"
+
+    # ICP for LiDAR
+    Icp/MaxCorrespondenceDistance: "0.15"
+    Icp/VoxelSize: "0.05"
+    Icp/PointToPlane: "true"
+    Icp/Iterations: "30"
+    Icp/Epsilon: "0.001"
+
+    # 3D Reconstruction
+    cloud_voxel_size: 0.02
+    cloud_ceiling_height: 3.5
+    cloud_floor_height: -0.1

@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "src/aetherscan_description",
+    "src/aetherscan_gazebo",
+    "src/aetherscan_slam",
+    "src/aetherscan_navigation",
+    "src/aetherscan_perception",
+    "src/aetherscan_control",
+    "src/aetherscan_teleop",
+    "src/aetherscan_mission",
+    "src/aetherscan_bringup"
+]

@@ -1,0 +1,57 @@
+# AetherScan Global System Configuration
+
+system:
+  drone_name: "aetherscan"
+  frame_prefix: "aetherscan/"
+
+simulation:
+  real_time_factor: 1.0
+  physics_step_size: 0.001
+  default_world: "office_environment"
+
+drone:
+  mass_kg: 1.5
+  arm_length_m: 0.15
+  max_thrust_n: 25.0
+  prop_diameter_m: 0.127
+
+sensors:
+  camera:
+    width: 640
+    height: 480
+    fps: 30
+    fov_deg: 87
+    depth_min_m: 0.1
+    depth_max_m: 10.0
+  lidar:
+    channels: 16
+    range_m: 20.0
+    update_rate_hz: 10
+    horizontal_fov_deg: 360
+    vertical_fov_deg: 30
+  imu:
+    update_rate_hz: 200
+  rangefinder:
+    range_m: 8.0
+    update_rate_hz: 50
+
+safety:
+  max_altitude_m: 4.0
+  min_altitude_m: 0.3
+  max_velocity_ms: 1.5
+  max_vertical_velocity_ms: 0.5
+  geofence_margin_m: 0.5
+  emergency_land_battery_pct: 10
+  return_home_battery_pct: 20
+
+mapping:
+  voxel_size_m: 0.02
+  max_range_m: 8.0
+  min_range_m: 0.3
+  map_update_rate_hz: 2
+
+dashboard:
+  rosbridge_port: 9090
+  web_port: 3000
+  point_cloud_decimation: 4
+  update_rate_hz: 10

@@ -1,0 +1,296 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="aetherscan_drone">
+
+  <!-- Properties -->
+  <xacro:property name="body_length" value="0.30"/>
+  <xacro:property name="body_width" value="0.30"/>
+  <xacro:property name="body_height" value="0.08"/>
+  <xacro:property name="arm_length" value="0.15"/>
+  <xacro:property name="arm_radius" value="0.01"/>
+  <xacro:property name="rotor_radius" value="0.0635"/>
+  <xacro:property name="rotor_height" value="0.005"/>
+  <xacro:property name="mass" value="1.5"/>
+  <xacro:property name="arm_mass" value="0.05"/>
+  <xacro:property name="rotor_mass" value="0.02"/>
+  <xacro:property name="camera_mass" value="0.1"/>
+  <xacro:property name="lidar_mass" value="0.3"/>
+
+  <!-- Materials -->
+  <material name="dark_grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="light_grey">
+    <color rgba="0.7 0.7 0.7 1.0"/>
+  </material>
+  <material name="blue">
+    <color rgba="0.0 0.5 0.8 1.0"/>
+  </material>
+  <material name="red">
+    <color rgba="0.8 0.1 0.1 1.0"/>
+  </material>
+
+  <!-- Base Link -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="${body_length} ${body_width} ${body_height}"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${body_length} ${body_width} ${body_height}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="${mass}"/>
+      <inertia ixx="${mass*(body_width*body_width + body_height*body_height)/12}"
+               ixy="0" ixz="0"
+               iyy="${mass*(body_length*body_length + body_height*body_height)/12}"
+               iyz="0"
+               izz="${mass*(body_length*body_length + body_width*body_width)/12}"/>
+    </inertial>
+  </link>
+
+  <!-- Rotor Macro -->
+  <xacro:macro name="rotor" params="name x y direction">
+    <link name="${name}_arm">
+      <visual>
+        <origin xyz="${x/2} ${y/2} 0.01" rpy="0 0 ${direction * 0.785}"/>
+        <geometry>
+          <cylinder radius="${arm_radius}" length="${arm_length}"/>
+        </geometry>
+        <material name="light_grey"/>
+      </visual>
+      <inertial>
+        <mass value="${arm_mass}"/>
+        <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+      </inertial>
+    </link>
+
+    <joint name="${name}_arm_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}_arm"/>
+      <origin xyz="0 0 0"/>
+    </joint>
+
+    <link name="${name}_rotor">
+      <visual>
+        <geometry>
+          <cylinder radius="${rotor_radius}" length="${rotor_height}"/>
+        </geometry>
+        <material name="blue"/>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="${rotor_radius}" length="${rotor_height}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${rotor_mass}"/>
+        <inertia ixx="${rotor_mass*rotor_radius*rotor_radius/4}"
+                 ixy="0" ixz="0"
+                 iyy="${rotor_mass*rotor_radius*rotor_radius/4}"
+                 iyz="0"
+                 izz="${rotor_mass*rotor_radius*rotor_radius/2}"/>
+      </inertial>
+    </link>
+
+    <joint name="${name}_rotor_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${name}_rotor"/>
+      <origin xyz="${x} ${y} ${body_height/2 + rotor_height/2 + 0.01}"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Create 4 rotors -->
+  <xacro:rotor name="front_left"  x="${arm_length}" y="${arm_length}" direction="1"/>
+  <xacro:rotor name="front_right" x="${arm_length}" y="${-arm_length}" direction="-1"/>
+  <xacro:rotor name="rear_left"   x="${-arm_length}" y="${arm_length}" direction="-1"/>
+  <xacro:rotor name="rear_right"  x="${-arm_length}" y="${-arm_length}" direction="1"/>
+
+  <!-- RGB-D Camera (Intel RealSense D435 style) -->
+  <link name="camera_link">
+    <visual>
+      <geometry>
+        <box size="0.025 0.09 0.025"/>
+      </geometry>
+      <material name="light_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.025 0.09 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="${camera_mass}"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+    <origin xyz="${body_length/2} 0 -0.02" rpy="0 0.26 0"/>
+  </joint>
+
+  <link name="camera_optical_frame"/>
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link="camera_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <!-- 3D LiDAR (VLP-16 style) -->
+  <link name="lidar_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.0425" length="0.072"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.0425" length="0.072"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="${lidar_mass}"/>
+      <inertia ixx="0.0002" ixy="0" ixz="0" iyy="0.0002" iyz="0" izz="0.0003"/>
+    </inertial>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0 0 ${body_height/2 + 0.04}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- IMU -->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.01"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Downward Rangefinder -->
+  <link name="rangefinder_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.01" length="0.02"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    <inertial>
+      <mass value="0.01"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="rangefinder_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="rangefinder_link"/>
+    <origin xyz="0 0 ${-body_height/2 - 0.01}" rpy="0 1.5708 0"/>
+  </joint>
+
+  <!-- Gazebo Plugins -->
+  <gazebo>
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>aetherscan</robotNamespace>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>200</update_rate>
+      <topic>imu</topic>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="camera_link">
+    <sensor name="rgbd_camera" type="rgbd_camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <camera>
+        <horizontal_fov>1.518</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>10.0</far>
+        </clip>
+        <depth_camera>
+          <clip>
+            <near>0.1</near>
+            <far>10.0</far>
+          </clip>
+        </depth_camera>
+      </camera>
+      <topic>camera</topic>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="lidar_link">
+    <sensor name="lidar_3d" type="gpu_lidar">
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>16</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.2618</min_angle>
+            <max_angle>0.2618</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.3</min>
+          <max>20.0</max>
+        </range>
+      </lidar>
+      <topic>lidar</topic>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="rangefinder_link">
+    <sensor name="downward_rangefinder" type="ray">
+      <always_on>true</always_on>
+      <update_rate>50</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.05</min>
+          <max>8.0</max>
+        </range>
+      </ray>
+      <topic>rangefinder</topic>
+    </sensor>
+  </gazebo>
+
+</robot>

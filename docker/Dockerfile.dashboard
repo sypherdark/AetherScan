@@ -1,0 +1,23 @@
+# Dashboard + authentic .ply meshes copied from redwood cache (no procedural boxes)
+FROM python:3.11-slim AS mesh-export
+WORKDIR /workspace
+COPY redwood_sim/scene_loader.py redwood_sim/scene_loader.py
+COPY redwood_sim/procedural_scene.py redwood_sim/procedural_scene.py
+COPY redwood_sim/core redwood_sim/core
+COPY scripts/export-meshes-to-dashboard.py scripts/export-meshes-to-dashboard.py
+RUN pip install --no-cache-dir numpy open3d trimesh \
+    && (python scripts/export-meshes-to-dashboard.py || mkdir -p dashboard/public/meshes)
+
+FROM node:20-alpine
+WORKDIR /app
+COPY dashboard/package.json dashboard/package-lock.json* ./
+RUN npm ci 2>/dev/null || npm install
+COPY dashboard/next.config.js dashboard/tsconfig.json dashboard/postcss.config.js dashboard/tailwind.config.js ./
+COPY dashboard/src ./src
+COPY dashboard/public ./public
+COPY --from=mesh-export /workspace/dashboard/public/meshes ./public/meshes
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
+EXPOSE 3000
+ENV HOSTNAME=0.0.0.0
+CMD ["npm", "start"]

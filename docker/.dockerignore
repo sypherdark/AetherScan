@@ -1,0 +1,6 @@
+dashboard/node_modules
+dashboard/.next
+aetherscan_ws/build
+aetherscan_ws/install
+aetherscan_ws/log
+.git

@@ -1,0 +1,43 @@
+# ── Dependencies ────────────────────────────────────────────────────────────────
+node_modules/
+.next/
+build/
+dist/
+
+# ── Python ───────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+*.egg
+
+# ── ROS 2 colcon build output ────────────────────────────────────────────────────
+aetherscan_ws/build/
+aetherscan_ws/install/
+aetherscan_ws/log/
+
+# ── Large binary assets (regenerate with scripts/) ───────────────────────────────
+# Replica dataset (~4.7 GB) — symlinked to external SSD; see redwood_sim/data/replica/
+redwood_sim/data/replica/
+# Redwood PLY meshes (200 MB+ each)
+redwood_sim/data/redwood/*.ply
+# Dashboard mesh assets — GLBs and PLYs are generated from Replica data
+# Run: python3 scripts/convert_replica_to_glb.py && python3 scripts/build_collision_meshes_fast.py
+dashboard/public/meshes/*.ply
+dashboard/public/meshes/*.glb
+# Scan export deliverables (generated at runtime)
+dashboard/public/exports/
+
+# ── Pytest cache ──────────────────────────────────────────────────────────────────
+.pytest_cache/
+
+# ── macOS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+**/.DS_Store
+
+# ── IDE / editor ─────────────────────────────────────────────────────────────────
+.env.local
+.env
+*.swp
+*.swo

@@ -1,0 +1,217 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="warehouse">
+    <physics name="1ms" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-altimeter-system" name="gz::sim::systems::Altimeter"/>
+
+    <!-- Industrial lighting -->
+    <light type="directional" name="warehouse_ambient">
+      <cast_shadows>true</cast_shadows>
+      <pose>15 10 8 0 0 0</pose>
+      <diffuse>0.7 0.7 0.7 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+
+    <light type="point" name="bay_light_1">
+      <pose>7 5 5.8 0 0 0</pose>
+      <diffuse>1 0.95 0.85 1</diffuse>
+      <attenuation><range>15</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.01</quadratic></attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="point" name="bay_light_2">
+      <pose>15 5 5.8 0 0 0</pose>
+      <diffuse>1 0.95 0.85 1</diffuse>
+      <attenuation><range>15</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.01</quadratic></attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="point" name="bay_light_3">
+      <pose>23 5 5.8 0 0 0</pose>
+      <diffuse>1 0.95 0.85 1</diffuse>
+      <attenuation><range>15</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.01</quadratic></attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="point" name="bay_light_4">
+      <pose>7 15 5.8 0 0 0</pose>
+      <diffuse>1 0.95 0.85 1</diffuse>
+      <attenuation><range>15</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.01</quadratic></attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <light type="point" name="bay_light_5">
+      <pose>15 15 5.8 0 0 0</pose>
+      <diffuse>1 0.95 0.85 1</diffuse>
+      <attenuation><range>15</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.01</quadratic></attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <!-- Ground -->
+    <model name="ground">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>35 25</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>35 25</size></plane></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <specular>0.15 0.15 0.15 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Warehouse Walls (30m x 20m, 6m ceiling) -->
+    <model name="wall_n"><static>true</static>
+      <pose>15 20 3 0 0 0</pose>
+      <link name="l"><collision name="c"><geometry><box><size>30 0.2 6</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>30 0.2 6</size></box></geometry>
+          <material><ambient>0.6 0.6 0.58 1</ambient><diffuse>0.65 0.65 0.63 1</diffuse></material></visual></link>
+    </model>
+    <model name="wall_s"><static>true</static>
+      <pose>15 0 3 0 0 0</pose>
+      <link name="l"><collision name="c"><geometry><box><size>30 0.2 6</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>30 0.2 6</size></box></geometry>
+          <material><ambient>0.6 0.6 0.58 1</ambient><diffuse>0.65 0.65 0.63 1</diffuse></material></visual></link>
+    </model>
+    <model name="wall_e"><static>true</static>
+      <pose>30 10 3 0 0 0</pose>
+      <link name="l"><collision name="c"><geometry><box><size>0.2 20 6</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.2 20 6</size></box></geometry>
+          <material><ambient>0.6 0.6 0.58 1</ambient><diffuse>0.65 0.65 0.63 1</diffuse></material></visual></link>
+    </model>
+    <model name="wall_w"><static>true</static>
+      <pose>0 10 3 0 0 0</pose>
+      <link name="l"><collision name="c"><geometry><box><size>0.2 20 6</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.2 20 6</size></box></geometry>
+          <material><ambient>0.6 0.6 0.58 1</ambient><diffuse>0.65 0.65 0.63 1</diffuse></material></visual></link>
+    </model>
+
+    <!-- Ceiling -->
+    <model name="ceiling"><static>true</static>
+      <pose>15 10 6 0 0 0</pose>
+      <link name="l"><collision name="c"><geometry><box><size>30 20 0.15</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>30 20 0.15</size></box></geometry>
+          <material><ambient>0.4 0.4 0.4 1</ambient><diffuse>0.45 0.45 0.45 1</diffuse></material></visual></link>
+    </model>
+
+    <!-- Shelving Racks (4 rows) -->
+    <model name="rack_1"><static>true</static>
+      <pose>5 5 2.0 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.0 8.0 4.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.0 8.0 4.0</size></box></geometry>
+          <material><ambient>0.35 0.4 0.5 1</ambient><diffuse>0.4 0.45 0.55 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="rack_2"><static>true</static>
+      <pose>10 5 2.0 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.0 8.0 4.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.0 8.0 4.0</size></box></geometry>
+          <material><ambient>0.35 0.4 0.5 1</ambient><diffuse>0.4 0.45 0.55 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="rack_3"><static>true</static>
+      <pose>15 5 2.0 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.0 8.0 4.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.0 8.0 4.0</size></box></geometry>
+          <material><ambient>0.35 0.4 0.5 1</ambient><diffuse>0.4 0.45 0.55 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="rack_4"><static>true</static>
+      <pose>5 15 2.0 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.0 8.0 4.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.0 8.0 4.0</size></box></geometry>
+          <material><ambient>0.35 0.4 0.5 1</ambient><diffuse>0.4 0.45 0.55 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="rack_5"><static>true</static>
+      <pose>10 15 2.0 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.0 8.0 4.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.0 8.0 4.0</size></box></geometry>
+          <material><ambient>0.35 0.4 0.5 1</ambient><diffuse>0.4 0.45 0.55 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Pallets and boxes -->
+    <model name="pallet_1"><static>true</static>
+      <pose>22 4 0.4 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.2 1.0 0.8</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.2 1.0 0.8</size></box></geometry>
+          <material><ambient>0.6 0.5 0.3 1</ambient><diffuse>0.7 0.55 0.35 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="pallet_2"><static>true</static>
+      <pose>22 7 0.6 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.2 1.0 1.2</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.2 1.0 1.2</size></box></geometry>
+          <material><ambient>0.5 0.4 0.25 1</ambient><diffuse>0.6 0.45 0.3 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="box_stack_1"><static>true</static>
+      <pose>25 10 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.6 0.6 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.6 0.6 1.5</size></box></geometry>
+          <material><ambient>0.55 0.4 0.2 1</ambient><diffuse>0.65 0.45 0.25 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="box_stack_2"><static>true</static>
+      <pose>25 12 0.5 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.8 0.8 1.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.8 0.8 1.0</size></box></geometry>
+          <material><ambient>0.55 0.4 0.2 1</ambient><diffuse>0.65 0.45 0.25 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Forklift (static obstacle) -->
+    <model name="forklift"><static>true</static>
+      <pose>20 15 0.5 0 0 0.3</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.2 2.5 1.0</size></box></geometry></collision>
+        <visual name="body"><geometry><box><size>1.0 2.0 1.0</size></box></geometry>
+          <material><ambient>0.7 0.55 0.0 1</ambient><diffuse>0.8 0.6 0.0 1</diffuse></material></visual>
+        <visual name="mast"><pose>0 -0.8 0.8 0 0 0</pose><geometry><box><size>0.15 0.1 1.6</size></box></geometry>
+          <material><ambient>0.3 0.3 0.3 1</ambient><diffuse>0.4 0.4 0.4 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <include>
+      <uri>model://aetherscan_drone</uri>
+      <name>aetherscan</name>
+      <pose>2 10 0.2 0 0 0</pose>
+    </include>
+
+  </world>
+</sdf>
