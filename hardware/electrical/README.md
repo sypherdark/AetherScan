@@ -14,12 +14,13 @@ off-the-shelf board does cleanly for *this* sensor/compute payload:
 2. **Break out the sensor bus.** One tidy board with labelled UART/I2C/USB/5V
    headers for the RPLIDAR, D435i, and flow/ToF — instead of a wiring rat's nest.
 
-> The actual KiCad schematic + layout are produced in the **kicad-happy** skill
-> step (https://github.com/aklofas/kicad-happy). This README is the design intent;
-> the **component-level design is complete** in
-> [psdb-design.md](psdb-design.md) (parts, nets, filters, connectors) and
-> [emi-thermal-failsafe.md](emi-thermal-failsafe.md) (EMI, thermal, telemetry,
-> failsafe). Only the PCB layout/Gerbers wait on the tool. KiCad project → `pcb/`.
+> **Tooling (chosen 2026-06-23):** the board is authored **as code** with
+> [atopile](https://github.com/atopile/atopile) (`ato`) and reviewed with the
+> [kicad-happy](https://github.com/aklofas/kicad-happy) Claude skills — same
+> code→build→verify loop as the airframe CAD. The code-defined PSDB lives in
+> [pcb/](pcb/) and builds today (`make pcb`) with real LCSC-sourced parts. The
+> component-level design intent is in [psdb-design.md](psdb-design.md) and
+> [emi-thermal-failsafe.md](emi-thermal-failsafe.md).
 
 ## Power tree
 

@@ -1,0 +1,92 @@
+"""
+AetherScan Power & Sensor Distribution Board (PSDB) — code-defined in atopile.
+
+This is the schematic, AS CODE — same workflow as the airframe CAD (parametric,
+version-controlled, builds to a verifiable artifact). `ato build` compiles this to
+a KiCad PCB + BOM + power-tree, and the kicad-happy skills review the result.
+
+Design intent (parts, filters, failsafe) is fully specified in:
+  hardware/electrical/psdb-design.md  and  emi-thermal-failsafe.md
+
+Status: structural netlist (rails, regulators-as-network, protection, sensing,
+filtering, decoupling). The switching-IC footprints (TI TPS568230 8 A / LMR33630
+3 A) are dropped in at layout from their LCSC parts — this module models their
+external network so the power tree and BOM are real and the board builds.
+"""
+
+import ElectricPower
+import Resistor
+import Capacitor
+import Inductor
+
+
+module BuckReg:
+    """Synchronous step-down rail: power_in (VBAT) -> power_out (5 V).
+
+    Models the regulator's external network — input/output bulk + the inductor.
+    The controller IC (see psdb-design.md: TPS568230 for 8 A, LMR33630 for 3 A)
+    is placed at layout from its LCSC footprint; here we capture the power path,
+    decoupling, and a ferrite bead (modelled as a small inductor) on the output.
+    """
+    power_in = new ElectricPower
+    power_out = new ElectricPower
+
+    cin = new Capacitor
+    cout = new Capacitor
+    l_sw = new Inductor          # buck inductor
+    fb = new Inductor            # output ferrite bead (EMI), ~600R@100MHz
+
+    cin.capacitance = 22uF +/- 20%
+    assert cin.max_voltage >= 35V
+    cout.capacitance = 44uF +/- 20%
+    assert cout.max_voltage >= 16V
+    l_sw.inductance = 2.2uH +/- 20%
+    fb.inductance = 1uH +/- 30%
+
+    # Input decoupling across VBAT
+    power_in.hv ~ cin.unnamed[0]
+    cin.unnamed[1] ~ power_in.lv
+
+    # Power path: VBAT -> inductor -> ferrite bead -> 5 V out
+    power_in.hv ~ l_sw.unnamed[0]
+    l_sw.unnamed[1] ~ fb.unnamed[0]
+    fb.unnamed[1] ~ power_out.hv
+
+    # Output bulk
+    power_out.hv ~ cout.unnamed[0]
+    cout.unnamed[1] ~ power_out.lv
+
+    power_in.lv ~ power_out.lv
+
+
+module Psdb:
+    """The board. One battery input, two isolated 5 V rails, battery sense."""
+    vbat = new ElectricPower      # 4S 12.0-16.8 V (PM02 pass-through)
+    v5_comp = new ElectricPower   # 5 V / 8 A  -> Jetson Orin Nano (isolated)
+    v5_avi = new ElectricPower    # 5 V / 3 A  -> Pixhawk + RPLIDAR + flow/ToF + D435 hub
+
+    # Bulk input capacitor (low-ESR) across the pack
+    cbulk = new Capacitor
+    cbulk.capacitance = 470uF +/- 20%
+    assert cbulk.max_voltage >= 35V
+    vbat.hv ~ cbulk.unnamed[0]
+    cbulk.unnamed[1] ~ vbat.lv
+
+    # The two rails — isolated so a Jetson transient can't brown out the FC
+    buck_comp = new BuckReg
+    buck_avi = new BuckReg
+    vbat ~ buck_comp.power_in
+    buck_comp.power_out ~ v5_comp
+    vbat ~ buck_avi.power_in
+    buck_avi.power_out ~ v5_avi
+
+    # Battery-voltage sense divider (to the INA226 / FC ADC). 10k:2k -> /6.
+    rs_top = new Resistor
+    rs_bot = new Resistor
+    rs_top.resistance = 10kohm +/- 1%
+    rs_bot.resistance = 2kohm +/- 1%
+    signal vsense
+    vbat.hv ~ rs_top.unnamed[0]
+    rs_top.unnamed[1] ~ vsense
+    vsense ~ rs_bot.unnamed[0]
+    rs_bot.unnamed[1] ~ vbat.lv

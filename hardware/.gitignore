@@ -5,6 +5,15 @@ cad/out/
 *.step.bak
 # Datasheet PDFs (linked in bom/bom.csv — too large to commit)
 datasheets/*.pdf
+# atopile PCB build output + caches (regenerate with: make pcb)
+electrical/pcb/build/
+electrical/pcb/.ato/
+# Auto-fetched part packages (datasheets/footprints/STEP, ~80 MB) — reproducible
+# from the LCSC part numbers in psdb.ato, like node_modules.
+electrical/pcb/elec/src/parts/
+# Auto-generated layout (no manual placement yet) — start committing this once
+# real board placement/routing begins.
+electrical/pcb/elec/layout/
 # uv / python caches
 __pycache__/
 .venv/

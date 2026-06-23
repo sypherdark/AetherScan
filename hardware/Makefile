@@ -4,8 +4,9 @@
 UV      := $(HOME)/.local/bin/uvx
 VENV_PY := $(abspath ..)/redwood_sim/.venv/bin/python
 CADDIR  := cad
+PCBDIR  := electrical/pcb
 
-.PHONY: all check cad parts assembly inertia preview clean
+.PHONY: all check cad parts assembly inertia preview pcb pcb-bom clean
 
 all: check cad parts assembly preview
 
@@ -35,5 +36,14 @@ STL ?= out/frame.stl
 preview:
 	cd $(CADDIR) && $(VENV_PY) render_preview.py $(STL)
 
+## Build the PSDB PCB from code → build/builds/psdb/{*.kicad_pcb, BOM, power-tree}
+pcb:
+	cd $(PCBDIR) && $(UV) --from atopile ato build
+
+## Show the picked-parts BOM (real LCSC part numbers) after a build.
+pcb-bom:
+	@cat $(PCBDIR)/build/builds/psdb/psdb.bom.csv
+
 clean:
 	rm -rf $(CADDIR)/out/*
+	rm -rf $(PCBDIR)/build

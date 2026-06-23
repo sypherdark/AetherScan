@@ -97,7 +97,10 @@ make all       # check → cad → parts → assembly → preview
   `~/.claude/skills/build123d`.
 - **Preview render:** matplotlib + trimesh in the `redwood_sim/.venv` (headless,
   no GPU).
-- **PCB:** [kicad-happy](https://github.com/aklofas/kicad-happy) (pending).
+- **PCB:** code-defined with [atopile](https://github.com/atopile/atopile)
+  (`make pcb`) + reviewed with the [kicad-happy](https://github.com/aklofas/kicad-happy)
+  skills (installed at `~/.claude/skills/{kicad,emc,spice,bom,jlcpcb,...}`). The
+  PSDB builds today with real LCSC parts — see [electrical/pcb/](electrical/pcb/).
 
 ## What's done vs. next
 - ✅ Contract, BOM, specs, parametric airframe, preview pipeline, electrical design.
