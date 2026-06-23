@@ -15,8 +15,11 @@ off-the-shelf board does cleanly for *this* sensor/compute payload:
    headers for the RPLIDAR, D435i, and flow/ToF — instead of a wiring rat's nest.
 
 > The actual KiCad schematic + layout are produced in the **kicad-happy** skill
-> step (https://github.com/aklofas/kicad-happy). This README is the design intent
-> the schematic must implement. The KiCad project lives in `pcb/`.
+> step (https://github.com/aklofas/kicad-happy). This README is the design intent;
+> the **component-level design is complete** in
+> [psdb-design.md](psdb-design.md) (parts, nets, filters, connectors) and
+> [emi-thermal-failsafe.md](emi-thermal-failsafe.md) (EMI, thermal, telemetry,
+> failsafe). Only the PCB layout/Gerbers wait on the tool. KiCad project → `pcb/`.
 
 ## Power tree
 

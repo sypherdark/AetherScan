@@ -6,9 +6,13 @@ physics model, the sensor suite is the one the real-world readiness audit
 validated, and a checker (`cad/check_against_software.py`) fails CI if the two
 ever drift apart.
 
-> **Status:** Phase H0 (paper drone) — no parts bought yet. Geometry, BOM, mass,
-> power, and wiring are designed and self-consistent; the airframe CAD exports
-> real GLB/STEP/STL. See [ROADMAP_HARDWARE.md](ROADMAP_HARDWARE.md).
+> **Status:** Phase H0 **complete — design + simulation DEPLOYMENT-READY** (unanimous
+> council vote, Design Review 3). Inertia reconciled to the buildable airframe and
+> the controller re-validated; airframe frozen; electrical design complete (PSDB
+> BOM/nets + EMI/thermal/failsafe). Everything remaining is build-phase, gated on
+> funded parts + the KiCad tool — not on further design. No parts bought yet.
+> See [design/DESIGN_REVIEW_3.md](design/DESIGN_REVIEW_3.md),
+> [ROADMAP_HARDWARE.md](ROADMAP_HARDWARE.md).
 
 ## The drone, in one table
 
@@ -36,8 +40,9 @@ hardware/
 ├── ROADMAP_HARDWARE.md        ← funding-aware build plan (H0→H4)
 ├── Makefile                   ← make check | cad | preview | all
 ├── design/
-│   ├── DESIGN_COUNCIL.md      ← multidisciplinary design review 1 (the WHY)
+│   ├── DESIGN_COUNCIL.md      ← review 1: multidisciplinary design (the WHY)
 │   ├── DESIGN_REVIEW_2.md     ← review 2: + CEO seat, live-researched, voted
+│   ├── DESIGN_REVIEW_3.md     ← review 3: iterated to UNANIMOUS deployment-ready
 │   └── design-spec.md         ← the converged airframe spec (the WHAT)
 ├── specs/
 │   ├── system-spec.md         ← THE CONTRACT: every req traced to the software

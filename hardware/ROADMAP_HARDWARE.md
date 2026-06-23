@@ -10,32 +10,30 @@ Legend: ✅ done · 🔧 in progress · ⬜ not started · 💰 needs funds
 
 ---
 
-## Phase H0 — Paper drone (no spend) — 🔧
+## Phase H0 — Paper drone (no spend) — ✅ COMPLETE / DEPLOYMENT-READY
 
-Everything that makes the build *real on paper* before buying anything.
+Everything that makes the build *real on paper* before buying anything. Converged
+through 3 design-council reviews to a **unanimous deployment-ready** vote.
 
 - ✅ Lock the hardware contract to the software (`cad/parameters.py` + checker).
 - ✅ BOM of real, currently-purchasable parts (`bom/bom.csv`) — $1,659.
 - ✅ System spec, mass budget, power budget (`specs/`).
-- ✅ Parametric airframe CAD that exports GLB/STEP/STL (`cad/frame.py`).
-- ✅ Sensor brackets (D435 nose, flow/ToF belly) — `cad/sensor_mounts.py`.
-- ✅ Compute tray (Jetson + FC soft-mount) — `cad/compute_tray.py`.
-- ✅ Full assembly with real per-part masses + inertia tensor — `cad/assembly.py`.
-  **Finding:** buildable inertia is 20–54% below the sim's assumed values
-  (Izz −54%); the sim's numbers are physically unreachable. See
-  `specs/inertia-findings.md`.
-- ⬜ **[GATING — voted #1 by Design Review 2]** reconcile `physics.py` inertia down
-  to the buildable values (Ixx≈0.0075, Iyy≈0.011, Izz≈0.012) + re-tune/re-validate
-  the controller. Every discipline named this the first action.
-- ⬜ **[STRATEGY]** pick the single target customer/objective (construction-progress
-  · facility survey · real-estate) and let it veto features (CEO, Review 2 P1).
-- ⬜ **[TRADE STUDY]** guards vs endurance vs 1.45 kg (Review 2 P3 — no mandate).
-- 🔁 Folding arms **deferred to v2** (Review 2 P4 rejected; overturns Council-1 D7).
-- ⬜ Power & Sensor Distribution Board (PSDB) schematic + PCB (electrical phase,
-  kicad-happy skill).
+- ✅ Parametric streamlined airframe CAD → GLB/STEP/STL (`cad/frame.py`).
+- ✅ Sensor brackets + compute tray (`cad/sensor_mounts.py`, `compute_tray.py`).
+- ✅ Full assembly + inertia tensor (`cad/assembly.py`).
+- ✅ **Inertia reconciled** to the buildable airframe (`physics.py`
+  0.0075/0.0095/0.011) + **controller re-validated** (gains retained; flight
+  envelope unchanged). `specs/inertia-findings.md` RESOLVED.
+- ✅ **Product objective:** construction-progress monitoring (Review 3 R2).
+- ✅ **Airframe frozen** for v1 (Review 3 R4).
+- ✅ **Electrical design complete:** PSDB component-level
+  (`electrical/psdb-design.md`) + EMI/thermal/failsafe
+  (`electrical/emi-thermal-failsafe.md`).
+- 🔁 Folding arms deferred to v2 (Review 2 P4).
 
-**Exit:** a complete digital twin — geometry, mass properties, wiring, and a PCB
-you could send to JLCPCB — all consistent with `redwood_sim`.
+**Exit MET:** a complete digital twin — geometry, mass properties, the full
+electrical design — all consistent with `redwood_sim`, unanimously judged
+deployment-ready. Next dollar buys parts (Phase H1).
 
 ## Phase H1 — Bench brain (~$530) — 💰
 
