@@ -26,7 +26,7 @@ export default function SceneViewer() {
   return (
     <Canvas
       className="w-full h-full"
-      gl={{ antialias: true, alpha: false, toneMapping: 4 /* ACESFilmicToneMapping */, toneMappingExposure: 1.12 }}
+      gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true, toneMapping: 4 /* ACESFilmicToneMapping */, toneMappingExposure: 1.12 }}
       shadows="soft"
     >
       {/* Obsidian void — near-black background */}
