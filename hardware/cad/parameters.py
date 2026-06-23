@@ -180,6 +180,51 @@ class Frame:
     mast_height: float = 60.0
     mast_od: float = 8.0
 
+    # ── Streamlined geometry (design-council revision, see hardware/design/) ──────
+    # Lofted canopy: a tapered shell instead of two flat plates. Bottom carries
+    # the battery + avionics; top tapers to the mast. Rounded for clean airflow
+    # and a real fairing.
+    canopy_base_len: float = 132.0
+    canopy_base_wid: float = 96.0
+    canopy_top_len: float = 78.0
+    canopy_top_wid: float = 54.0
+    canopy_height: float = 46.0
+    canopy_fillet: float = 18.0
+
+    # Round carbon tube arms (replace square tube — lower drag, standard clamps).
+    arm_od: float = 16.0
+    motor_boss_od: float = 30.0
+    motor_boss_h: float = 9.0
+    prop_z: float = 26.0                 # prop-disc height above origin
+
+    # Prop guard rings (indoor safety + collision tolerance, Flyability-class).
+    # Inner radius clears the 7" disc (89 mm) with margin; thin rim.
+    guard_ring_or: float = 100.0
+    guard_ring_ir: float = 94.0
+    guard_ring_h: float = 12.0
+    guard_strut_od: float = 5.0
+
+    # Streamlined LiDAR mast (tapered frustum). Height chosen so the RPLIDAR scan
+    # plane sits ABOVE the prop disc for an unobstructed 360° horizon.
+    mast_base_r: float = 17.0
+    mast_top_r: float = 9.0
+    mast_h: float = 82.0
+
+    # Nose camera pod on a short boom (puts the D435 ahead of the prop disc so the
+    # 87° FOV never sees a blade; tilted down for combined forward/floor view).
+    nose_boom_len: float = 44.0
+    nose_boom_od: float = 12.0
+    nose_pod_len: float = 30.0
+    nose_pod_wid: float = 34.0
+    nose_pod_h: float = 28.0
+    nose_cam_tilt_deg: float = 12.0
+
+    # Skid landing gear (twin curved skids — stiff, light, clears belly sensor).
+    skid_tube_od: float = 9.0
+    skid_leg_h: float = 74.0
+    skid_span: float = 124.0
+    skid_foot_len: float = 158.0
+
     motor: Motor = field(default_factory=Motor)
     esc: Esc = field(default_factory=Esc)
     fc: FlightController = field(default_factory=FlightController)

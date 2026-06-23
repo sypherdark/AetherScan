@@ -1,22 +1,21 @@
 """
-AetherScan airframe — primary structure.
+AetherScan airframe — streamlined structure (design-council revision).
 
-A 360 mm-wheelbase quad-X carbon frame sized to the flight-software contract
-(see parameters.py). Builds the load-bearing structure only — sensor brackets
-and the compute tray live in their own modules and bolt to the holes defined
-here, so each piece can be printed/cut and revised independently.
+A 360 mm quad-X built like a real indoor scanning drone, not a stack of plates:
 
-Geometry, top view (X-config, +X = nose / forward = D435 look direction):
+  • Lofted, rounded canopy fairing (clean prop inflow, houses battery+avionics).
+  • Round carbon-tube arms with motor bosses.
+  • Full prop-guard rings (Flyability-class collision tolerance for indoor work).
+  • A tapered central mast lifting the RPLIDAR scan plane clear above the prop
+    disc — the single hard geometric requirement (REALWORLD_READINESS.md §2.1).
+  • A nose pod on a short boom carrying the D435 ahead of the prop disc, tilted
+    12° down (forward + floor view) so no blade enters its 87° FOV.
+  • Twin curved skids that clear the belly flow/ToF sensor and the battery.
 
-        FL  o-----.        .-----o  FR
-             \     \      /     /
-              \     [ stack ]  /          stack = bottom plate + standoffs + top
-              /     /      \     \         plate; FC + ESC + companion mount here
-        RL  o-----'        '-----o  RR
-                         (RPLIDAR on a mast above; battery + flow/ToF below)
+Frame: mm, Z-up, +X = nose / forward (same axes as the flight software).
 
 Run:  uvx --from build123d python hardware/cad/frame.py
-Out:  hardware/cad/out/frame.{glb,step,stl}
+Out:  out/frame.{glb,step,stl}
 """
 
 from __future__ import annotations
@@ -25,13 +24,20 @@ import math
 from pathlib import Path
 
 from build123d import (
-    Box,
+    Axis,
+    BuildPart,
+    BuildSketch,
     Cylinder,
+    Plane,
     Pos,
+    Rectangle,
     Rot,
+    Cone,
     export_gltf,
     export_step,
     export_stl,
+    fillet,
+    loft,
 )
 
 import parameters as P
@@ -40,175 +46,169 @@ F = P.FRAME
 OUT = Path(__file__).parent / "out"
 OUT.mkdir(exist_ok=True)
 
-
-def _hole(d: float, h: float):
-    """A through-hole cutter (slightly taller than the stock it cuts)."""
-    return Cylinder(radius=d / 2, height=h + 2)
-
-
-def bottom_plate():
-    """Main structural plate: arms fuse into it; FC/ESC mount on top of it."""
-    plate = Box(F.center_plate_len, F.center_plate_wid, F.plate_thickness)
-
-    # Four arms emanate at 45° (quad-X). Each is a square carbon tube running
-    # from the plate centre out to the motor axis at ARM_LENGTH_MM.
-    arm_run = P.ARM_LENGTH_MM
-    for (mx, my) in P.motor_positions():
-        ang = math.degrees(math.atan2(my, mx))
-        midx, midy = mx / 2, my / 2
-        arm = (
-            Pos(midx, midy, 0)
-            * Rot(0, 0, ang)
-            * Box(arm_run, F.arm_tube, F.arm_tube)
-        )
-        plate = plate + arm
-
-        # Motor mount pad + bolt pattern at the tip.
-        pad = Pos(mx, my, 0) * Box(
-            F.motor_mount_pad, F.motor_mount_pad, F.plate_thickness
-        )
-        plate = plate + pad
-        # Centre bore (wiring) + 4× M3 on the motor bolt circle.
-        plate = plate - (Pos(mx, my, 0) * _hole(8.0, F.arm_tube))
-        r = F.motor.mount_bolt_circle / 2
-        for k in range(4):
-            a = math.radians(45 + 90 * k)
-            hx, hy = mx + r * math.cos(a), my + r * math.sin(a)
-            plate = plate - (Pos(hx, hy, 0) * _hole(F.motor.mount_hole, F.arm_tube))
-
-    # FC mounting holes (Pixhawk 6C, 76×35) centred on the plate.
-    bx, by = F.fc.mount_bolt_circle_x / 2, F.fc.mount_bolt_circle_y / 2
-    for sx in (-1, 1):
-        for sy in (-1, 1):
-            plate = plate - (
-                Pos(sx * bx, sy * by, 0) * _hole(F.fc.mount_hole, F.plate_thickness)
-            )
-
-    # Corner standoff holes (link to top plate) just inside the plate corners.
-    sx, sy = F.center_plate_len / 2 - 6, F.center_plate_wid / 2 - 6
-    for ax in (-1, 1):
-        for ay in (-1, 1):
-            plate = plate - (
-                Pos(ax * sx, ay * sy, 0) * _hole(F.screw_clear, F.plate_thickness)
-            )
-    return plate
+# Reference heights (origin z=0 is the arm/motor plane).
+Z_CANOPY_BOT = -F.canopy_height / 2          # canopy straddles the arm plane
+Z_CANOPY_TOP = Z_CANOPY_BOT + F.canopy_height
+Z_MAST_TOP = Z_CANOPY_TOP + F.mast_h
+ARM_RUN = P.ARM_LENGTH_MM                     # centre → motor
 
 
-def top_plate():
-    """Upper deck: carries the companion computer and the LiDAR mast."""
-    z = F.plate_gap + F.plate_thickness
-    plate = Pos(0, 0, z) * Box(
-        F.center_plate_len, F.center_plate_wid, F.plate_thickness
+def canopy():
+    """Tapered, rounded fairing lofted from a wide rounded base to a narrow top."""
+    with BuildPart() as part:
+        with BuildSketch(Plane.XY.offset(Z_CANOPY_BOT)) as s0:
+            Rectangle(F.canopy_base_len, F.canopy_base_wid)
+            fillet(s0.vertices(), F.canopy_fillet)
+        with BuildSketch(Plane.XY.offset(Z_CANOPY_TOP)) as s1:
+            Rectangle(F.canopy_top_len, F.canopy_top_wid)
+            fillet(s1.vertices(), F.canopy_fillet * 0.7)
+        loft()
+    return part.part
+
+
+def arm(mx: float, my: float):
+    """Round carbon tube from the canopy out to the motor, + motor boss."""
+    ang = math.degrees(math.atan2(my, mx))
+    midx, midy = mx / 2, my / 2
+    tube = (
+        Pos(midx, midy, 0)
+        * Rot(0, 0, ang)
+        * Rot(0, 90, 0)
+        * Cylinder(radius=F.arm_od / 2, height=ARM_RUN)
     )
-
-    # Jetson Orin Nano mount (86×58, M2.5).
-    bx, by = F.companion.mount_bolt_circle_x / 2, F.companion.mount_bolt_circle_y / 2
-    for ax in (-1, 1):
-        for ay in (-1, 1):
-            plate = plate - (
-                Pos(ax * bx, ay * by, z)
-                * _hole(F.companion.mount_hole, F.plate_thickness)
-            )
-
-    # Mast holes (3× on the LiDAR bolt circle, centred → clear 360° horizon).
-    r = F.lidar.mount_bolt_circle / 2
-    for k in range(3):
-        a = math.radians(90 + 120 * k)
-        plate = plate - (
-            Pos(r * math.cos(a), r * math.sin(a), z)
-            * _hole(F.screw_clear, F.plate_thickness)
+    boss = Pos(mx, my, F.motor_boss_h / 2) * Cylinder(
+        radius=F.motor_boss_od / 2, height=F.motor_boss_h
+    )
+    # M3 motor bolt circle.
+    r = F.motor.mount_bolt_circle / 2
+    for k in range(4):
+        a = math.radians(45 + 90 * k)
+        boss = boss - (
+            Pos(mx + r * math.cos(a), my + r * math.sin(a), F.motor_boss_h / 2)
+            * Cylinder(radius=F.motor.mount_hole / 2, height=F.motor_boss_h + 2)
         )
-
-    # Corner standoff holes (match bottom plate).
-    sx, sy = F.center_plate_len / 2 - 6, F.center_plate_wid / 2 - 6
-    for ax in (-1, 1):
-        for ay in (-1, 1):
-            plate = plate - (
-                Pos(ax * sx, ay * sy, z) * _hole(F.screw_clear, F.plate_thickness)
-            )
-    return plate
+    return tube + boss
 
 
-def standoffs():
-    """Four corner standoffs separating the two plates."""
-    sx, sy = F.center_plate_len / 2 - 6, F.center_plate_wid / 2 - 6
-    z = F.plate_thickness / 2
-    parts = None
-    for ax in (-1, 1):
-        for ay in (-1, 1):
-            s = Pos(ax * sx, ay * sy, z + F.plate_gap / 2) * Cylinder(
-                radius=F.standoff_od / 2, height=F.plate_gap
-            )
-            parts = s if parts is None else parts + s
-    return parts
-
-
-def landing_gear():
-    """Four legs below the bottom plate — clears the battery and the downward
-    optical-flow/ToF cone (parameters.Frame.leg_height)."""
-    sx, sy = F.center_plate_len / 2 - 10, F.center_plate_wid / 2 - 10
-    parts = None
-    for ax in (-1, 1):
-        for ay in (-1, 1):
-            leg = Pos(ax * sx, ay * sy, -F.leg_height / 2) * Cylinder(
-                radius=F.leg_od / 2, height=F.leg_height
-            )
-            parts = leg if parts is None else parts + leg
-    # Skid feet
-    foot_z = -F.leg_height
-    for ay in (-1, 1):
-        skid = Pos(0, ay * sy, foot_z) * Box(2 * sx + F.leg_od, F.leg_od, F.leg_od)
-        parts = parts + skid
+def prop_guard(mx: float, my: float):
+    """A full ring around the prop disc + struts back to the arm."""
+    z = F.prop_z
+    ring = Pos(mx, my, z) * (
+        Cylinder(radius=F.guard_ring_or, height=F.guard_ring_h)
+        - Cylinder(radius=F.guard_ring_ir, height=F.guard_ring_h + 2)
+    )
+    # Two struts from the ring inner edge toward the frame centre.
+    inward = math.atan2(-my, -mx)
+    parts = ring
+    for off in (-0.42, 0.42):
+        a = inward + off
+        sx = mx + F.guard_ring_ir * math.cos(a)
+        sy = my + F.guard_ring_ir * math.sin(a)
+        ex = mx + 0.45 * (0 - mx)
+        ey = my + 0.45 * (0 - my)
+        midx, midy = (sx + ex) / 2, (sy + ey) / 2
+        length = math.hypot(ex - sx, ey - sy)
+        sang = math.degrees(math.atan2(ey - sy, ex - sx))
+        strut = (
+            Pos(midx, midy, z)
+            * Rot(0, 0, sang)
+            * Rot(0, 90, 0)
+            * Cylinder(radius=F.guard_strut_od / 2, height=length)
+        )
+        parts = parts + strut
     return parts
 
 
 def lidar_mast():
-    """Three posts raising the RPLIDAR A2M12 above the prop disc so its 360°
-    scan plane has an unobstructed horizon — the single most important
-    geometric requirement from REALWORLD_READINESS.md §2.1."""
-    top_z = F.plate_gap + 2 * F.plate_thickness
-    r = F.lidar.mount_bolt_circle / 2
+    """Tapered streamlined post + LiDAR puck on top (scan plane above the props)."""
+    mast = Pos(0, 0, Z_CANOPY_TOP + F.mast_h / 2) * Cone(
+        bottom_radius=F.mast_base_r, top_radius=F.mast_top_r, height=F.mast_h
+    )
+    puck = Pos(0, 0, Z_MAST_TOP + F.lidar.height / 2) * Cylinder(
+        radius=F.lidar.diameter / 2, height=F.lidar.height
+    )
+    # Scan-plane indicator slot (purely visual cue of the 360° plane).
+    puck = puck - (
+        Pos(0, 0, Z_MAST_TOP + F.lidar.scan_plane_offset)
+        * (Cylinder(radius=F.lidar.diameter / 2 + 1, height=2)
+           - Cylinder(radius=F.lidar.diameter / 2 - 3, height=4))
+    )
+    return mast + puck
+
+
+def nose_pod():
+    """Short boom + faired pod holding the D435, tilted 12° down."""
+    boom = (
+        Pos(F.canopy_base_len / 2 - 4 + F.nose_boom_len / 2, 0, -2)
+        * Rot(0, 90, 0)
+        * Cylinder(radius=F.nose_boom_od / 2, height=F.nose_boom_len)
+    )
+    px = F.canopy_base_len / 2 - 4 + F.nose_boom_len
+    pod_center = Pos(px, 0, -2) * Rot(0, F.nose_cam_tilt_deg, 0)
+    with BuildPart() as pod:
+        with BuildSketch() as s:
+            Rectangle(F.nose_pod_len, F.nose_pod_wid)
+            fillet(s.vertices(), 8)
+        from build123d import extrude
+        extrude(amount=F.nose_pod_h, both=True)
+    body = pod_center * pod.part
+    # Lens
+    lens = pod_center * Pos(F.nose_pod_len / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(
+        radius=9, height=8
+    )
+    return boom + body + lens
+
+
+def skids():
+    """Twin curved skids: a foot tube each side on two angled legs."""
     parts = None
-    for k in range(3):
-        a = math.radians(90 + 120 * k)
-        post = Pos(r * math.cos(a), r * math.sin(a), top_z + F.mast_height / 2) * Cylinder(
-            radius=F.mast_od / 2, height=F.mast_height
+    for sy in (-1, 1):
+        y = sy * F.skid_span / 2
+        foot = Pos(0, y, -F.skid_leg_h) * Rot(90, 0, 0) * Cylinder(
+            radius=F.skid_tube_od / 2, height=F.skid_foot_len
         )
-        parts = post if parts is None else parts + post
-    # LiDAR deck
-    deck_z = top_z + F.mast_height
-    deck = Pos(0, 0, deck_z) * Cylinder(radius=r + 8, height=F.plate_thickness)
-    for k in range(3):
-        a = math.radians(90 + 120 * k)
-        deck = deck - (
-            Pos(r * math.cos(a), r * math.sin(a), deck_z)
-            * _hole(F.screw_clear, F.plate_thickness)
-        )
-    return parts + deck
+        parts = foot if parts is None else parts + foot
+        for lx in (-1, 1):
+            x = lx * F.skid_foot_len / 2 * 0.7
+            # angled leg from canopy bottom down-out to the foot
+            top = (x * 0.5, y * 0.6, Z_CANOPY_BOT + 4)
+            bot = (x, y, -F.skid_leg_h)
+            midx = (top[0] + bot[0]) / 2
+            midy = (top[1] + bot[1]) / 2
+            midz = (top[2] + bot[2]) / 2
+            length = math.dist(top, bot)
+            # orient cylinder (default +Z) to the leg direction
+            dx, dy, dz = bot[0] - top[0], bot[1] - top[1], bot[2] - top[2]
+            yaw = math.degrees(math.atan2(dy, dx))
+            pitch = math.degrees(math.atan2(math.hypot(dx, dy), dz))
+            leg = (
+                Pos(midx, midy, midz)
+                * Rot(0, 0, yaw)
+                * Rot(0, pitch, 0)
+                * Cylinder(radius=F.skid_tube_od / 2, height=length)
+            )
+            parts = parts + leg
+    return parts
 
 
 def airframe():
-    return (
-        bottom_plate()
-        + top_plate()
-        + standoffs()
-        + landing_gear()
-        + lidar_mast()
-    )
+    model = canopy()
+    for (mx, my) in P.motor_positions():
+        model = model + arm(mx, my) + prop_guard(mx, my)
+    model = model + lidar_mast() + nose_pod() + skids()
+    return model
 
 
 def main():
     model = airframe()
     bb = model.bounding_box()
-    sx = bb.max.X - bb.min.X
-    sy = bb.max.Y - bb.min.Y
-    sz = bb.max.Z - bb.min.Z
-    diag = math.hypot(sx, sy)  # motor-to-motor diagonal = the wheelbase spec
-    print(f"Airframe bounding box: {sx:.1f} × {sy:.1f} × {sz:.1f} mm")
-    print(f"  motor-to-motor diagonal ≈ {diag - F.motor_mount_pad:.0f} mm "
-          f"(spec wheelbase {P.WHEELBASE_DIAG_MM:.0f} mm)")
-    print(f"Volume: {model.volume / 1000:.1f} cm³")
-
+    sx, sy, sz = bb.max.X - bb.min.X, bb.max.Y - bb.min.Y, bb.max.Z - bb.min.Z
+    diag = math.hypot(P.WHEELBASE_DIAG_MM, P.WHEELBASE_DIAG_MM) / (2 ** 0.5)
+    print(f"Airframe envelope: {sx:.0f} × {sy:.0f} × {sz:.0f} mm")
+    print(f"  motor-to-motor diagonal: {P.WHEELBASE_DIAG_MM:.0f} mm (spec)")
+    print(f"  LiDAR scan plane at z≈{Z_MAST_TOP + F.lidar.scan_plane_offset:.0f} mm "
+          f"(prop disc z={F.prop_z:.0f} mm → clear horizon)")
+    print(f"Volume: {model.volume/1000:.1f} cm³")
     export_gltf(model, str(OUT / "frame.glb"), binary=True)
     export_step(model, str(OUT / "frame.step"))
     export_stl(model, str(OUT / "frame.stl"))

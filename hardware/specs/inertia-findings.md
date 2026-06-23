@@ -5,17 +5,19 @@ datasheet mass and computes the assembled inertia tensor. This is the most
 rigorous "is the hardware in accordance with the software" check we have — and it
 surfaced a genuine discrepancy worth a decision.
 
-## Result (1476 g build, CG on the thrust centre)
+## Result (streamlined build, CG on the thrust centre)
 
 | Axis | Buildable (CAD) | Sim assumes (`physics.py`) | Δ |
 |---|---:|---:|---:|
-| Ixx | 0.0073 kg·m² | 0.014 | **−48%** |
-| Iyy | 0.0112 kg·m² | 0.014 | **−20%** |
-| Izz | 0.0120 kg·m² | 0.026 | **−54%** |
+| Ixx | 0.0074 kg·m² | 0.014 | **−47%** |
+| Iyy | 0.0095 kg·m² | 0.014 | **−32%** |
+| Izz | 0.0111 kg·m² | 0.026 | **−57%** |
 
-Total mass and CG are fine (1476 g vs 1450 target; CG within 2 mm of centre).
-The **inertia is the problem**: the drone we can actually build has roughly half
-the rotational inertia the flight controller was tuned against.
+Total mass and CG are fine (CG within 2 mm of centre). The **inertia is the
+problem**: the drone we can actually build has roughly half the rotational inertia
+the flight controller was tuned against — and the result is robust across design
+revisions (the streamlined frame with a higher top-mast LiDAR moved the numbers by
+only a few percent; the −57% yaw gap persists). Reproduce with `make inertia`.
 
 ## Why this happens (and why the sim's numbers are the suspect ones)
 

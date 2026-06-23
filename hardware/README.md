@@ -12,9 +12,13 @@ ever drift apart.
 
 ## The drone, in one table
 
+> Airframe converged through a multidisciplinary design review —
+> [design/DESIGN_COUNCIL.md](design/DESIGN_COUNCIL.md) (aero, mech, electrical,
+> software + systems argue the tradeoffs) → [design/design-spec.md](design/design-spec.md).
+
 | | |
 |---|---|
-| Class | 360 mm-wheelbase quad-X, 7" props, prop-guarded for indoor |
+| Class | 360 mm-wheelbase quad-X, 7" props, removable prop-guard rings (indoor) |
 | AUW | 1.45 kg (matches `physics.py`) |
 | TWR | ~3.6–4.4 : 1 |
 | Endurance | ~15–17 min usable (4S 6000 mAh) |
@@ -31,6 +35,9 @@ hardware/
 ├── README.md                  ← you are here
 ├── ROADMAP_HARDWARE.md        ← funding-aware build plan (H0→H4)
 ├── Makefile                   ← make check | cad | preview | all
+├── design/
+│   ├── DESIGN_COUNCIL.md      ← multidisciplinary design review (the WHY)
+│   └── design-spec.md         ← the converged airframe spec (the WHAT)
 ├── specs/
 │   ├── system-spec.md         ← THE CONTRACT: every req traced to the software
 │   ├── mass-budget.md         ← 1442 g build, inertia-matching plan

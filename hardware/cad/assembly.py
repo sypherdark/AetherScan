@@ -39,52 +39,54 @@ class Part:
     dims_mm: tuple[float, float, float]      # bounding box (for own inertia)
 
 
-# Layout decisions (the levers we tune to hit the inertia targets).
-_Z_TOP = F.plate_gap + 2 * F.plate_thickness          # top-plate top surface
-_Z_MAST_DECK = _Z_TOP + F.mast_height                  # LiDAR deck
+# Layout anchors (match frame.py's streamlined geometry).
+_Z_CANOPY_BOT = -F.canopy_height / 2
+_Z_CANOPY_TOP = _Z_CANOPY_BOT + F.canopy_height
+_Z_MAST_TOP = _Z_CANOPY_TOP + F.mast_h
+_Z_LIDAR = _Z_MAST_TOP + F.lidar.height / 2
+_NOSE_X = F.canopy_base_len / 2 - 4 + F.nose_boom_len
 
 d = P.ARM_LENGTH_MM / (2 ** 0.5)                        # motor x/y offset (127.3)
 
 COMPONENTS: list[Part] = [
     # Heavy three — these dominate CG and inertia.
-    # Battery shifted aft to put the CG on the thrust centre (offsets the nose camera).
-    Part("battery",   F.battery.mass_g, (-22, 0, -25),
+    # Battery low in the canopy (low CG), shifted aft to offset the nose camera.
+    Part("battery",   F.battery.mass_g, (-20, 0, _Z_CANOPY_BOT + F.battery.height / 2 + 2),
          (F.battery.length, F.battery.width, F.battery.height)),
-    Part("lidar",     F.lidar.mass_g,   (0, 0, _Z_MAST_DECK + 20),
+    # LiDAR high on the mast — also the dominant Ixx/Iyy contributor.
+    Part("lidar",     F.lidar.mass_g,   (0, 0, _Z_LIDAR),
          (F.lidar.diameter, F.lidar.diameter, F.lidar.height)),
-    Part("jetson",    F.companion.mass_g, (0, 0, _Z_TOP + 21),
+    Part("jetson",    F.companion.mass_g, (0, 0, _Z_CANOPY_TOP - F.companion.height / 2 - 2),
          (F.companion.length, F.companion.width, F.companion.height)),
-    # Avionics on the bottom stack.
-    Part("fc",        F.fc.mass_g,  (0, 0, F.plate_thickness + 12),
-         (F.fc.length, F.fc.width, F.fc.height)),
-    Part("esc",       F.esc.mass_g, (0, 0, F.plate_thickness + 5),
-         (F.esc.length, F.esc.width, F.esc.height)),
-    # Forward depth camera at the nose.
-    Part("d435",      F.depth.mass_g, (P.ARM_LENGTH_MM + 20, 0, 17),
+    # Avionics in the canopy core.
+    Part("fc",        F.fc.mass_g,  (0, 0, 2), (F.fc.length, F.fc.width, F.fc.height)),
+    Part("esc",       F.esc.mass_g, (0, 0, -8), (F.esc.length, F.esc.width, F.esc.height)),
+    # Forward depth camera in the nose pod (tilted; treat as box).
+    Part("d435",      F.depth.mass_g, (_NOSE_X, 0, -2),
          (25, F.depth.length, F.depth.height)),
-    Part("flow_tof",  F.flow.mass_g, (0, 0, -12),
+    Part("flow_tof",  F.flow.mass_g, (0, 0, _Z_CANOPY_BOT - 10),
          (F.flow.length, F.flow.width, F.flow.height)),
     # Propulsion at the arm tips.
-    *[Part(f"motor_{i}", F.motor.mass_g, (sx * d, sy * d, 0),
+    *[Part(f"motor_{i}", F.motor.mass_g, (sx * d, sy * d, 6),
            (F.motor.boss_diameter, F.motor.boss_diameter, F.motor.height))
       for i, (sx, sy) in enumerate([(1, 1), (-1, 1), (-1, -1), (1, -1)])],
-    *[Part(f"prop_{i}", F.motor.mass_g * 0.14, (sx * d, sy * d, 20),
+    *[Part(f"prop_{i}", F.motor.mass_g * 0.14, (sx * d, sy * d, F.prop_z),
            (F.motor.prop_inch * 25.4, 12, 3))
       for i, (sx, sy) in enumerate([(1, 1), (-1, 1), (-1, -1), (1, -1)])],
-    # Frame structure (180 g budget), modelled as a few proxies.
-    Part("plate_bottom", 35, (0, 0, 0), (F.center_plate_len, F.center_plate_wid, 2)),
-    Part("plate_top",    30, (0, 0, _Z_TOP), (F.center_plate_len, F.center_plate_wid, 2)),
-    *[Part(f"arm_{i}", 15, (sx * d / 2, sy * d / 2, 0), (F.arm_tube, P.ARM_LENGTH_MM, F.arm_tube))
+    # Frame structure (~180 g budget), modelled as proxies at their real spots.
+    Part("canopy", 65, (0, 0, 0), (F.canopy_base_len, F.canopy_base_wid, F.canopy_height)),
+    *[Part(f"arm_{i}", 15, (sx * d / 2, sy * d / 2, 0), (P.ARM_LENGTH_MM, F.arm_od, F.arm_od))
       for i, (sx, sy) in enumerate([(1, 1), (-1, 1), (-1, -1), (1, -1)])],
-    Part("mast",   15, (0, 0, _Z_TOP + F.mast_height / 2), (60, 60, F.mast_height)),
-    Part("legs",   25, (0, 0, -F.leg_height / 2), (180, 90, F.leg_height)),
+    Part("mast", 16, (0, 0, _Z_CANOPY_TOP + F.mast_h / 2), (2 * F.mast_base_r, 2 * F.mast_base_r, F.mast_h)),
+    Part("skids", 32, (0, 0, -F.skid_leg_h / 2), (F.skid_foot_len, F.skid_span, F.skid_leg_h)),
     # Power electronics + harness.
-    Part("power_module", 36, (0, 0, F.plate_thickness + 5), (40, 25, 15)),
-    Part("bec",          12, (0, 0, F.plate_thickness + 9), (25, 15, 10)),
-    Part("psdb",         25, (0, 0, F.plate_thickness + 3), (50, 50, 10)),
+    Part("power_module", 36, (0, 0, -2), (40, 25, 15)),
+    Part("bec",          12, (0, 0, 4), (25, 15, 10)),
+    Part("psdb",         25, (0, 0, -2), (50, 50, 10)),
     Part("wiring",       27, (0, 0, 0), (90, 90, 20)),
-    # Prop guards — outboard at the motors, so they also add rotational inertia.
-    *[Part(f"guard_{i}", 10, (sx * d, sy * d, 10), (95, 95, 15))
+    # Prop guard rings — outboard at the motors, adding rotational inertia.
+    *[Part(f"guard_{i}", 16, (sx * d, sy * d, F.prop_z),
+           (2 * F.guard_ring_or, 2 * F.guard_ring_or, F.guard_ring_h))
       for i, (sx, sy) in enumerate([(1, 1), (-1, 1), (-1, -1), (1, -1)])],
 ]
 
@@ -145,7 +147,7 @@ def build_visual():
 
     model = frame_mod.airframe()
     for p in COMPONENTS:
-        if p.name.startswith(("plate", "arm", "mast", "legs")):
+        if p.name.startswith(("canopy", "arm", "mast", "skids", "guard")):
             continue  # already real geometry in the frame
         x, y, z = p.pos_mm
         a, b, c = p.dims_mm
