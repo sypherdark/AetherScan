@@ -24,8 +24,13 @@ Everything that makes the build *real on paper* before buying anything.
   **Finding:** buildable inertia is 20–54% below the sim's assumed values
   (Izz −54%); the sim's numbers are physically unreachable. See
   `specs/inertia-findings.md`.
-- ⬜ **DECISION:** reconcile `physics.py` inertia down to the buildable values
-  (Ixx≈0.0075, Iyy≈0.011, Izz≈0.012) + re-tune/re-validate the controller.
+- ⬜ **[GATING — voted #1 by Design Review 2]** reconcile `physics.py` inertia down
+  to the buildable values (Ixx≈0.0075, Iyy≈0.011, Izz≈0.012) + re-tune/re-validate
+  the controller. Every discipline named this the first action.
+- ⬜ **[STRATEGY]** pick the single target customer/objective (construction-progress
+  · facility survey · real-estate) and let it veto features (CEO, Review 2 P1).
+- ⬜ **[TRADE STUDY]** guards vs endurance vs 1.45 kg (Review 2 P3 — no mandate).
+- 🔁 Folding arms **deferred to v2** (Review 2 P4 rejected; overturns Council-1 D7).
 - ⬜ Power & Sensor Distribution Board (PSDB) schematic + PCB (electrical phase,
   kicad-happy skill).
 

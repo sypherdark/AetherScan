@@ -36,7 +36,8 @@ hardware/
 ├── ROADMAP_HARDWARE.md        ← funding-aware build plan (H0→H4)
 ├── Makefile                   ← make check | cad | preview | all
 ├── design/
-│   ├── DESIGN_COUNCIL.md      ← multidisciplinary design review (the WHY)
+│   ├── DESIGN_COUNCIL.md      ← multidisciplinary design review 1 (the WHY)
+│   ├── DESIGN_REVIEW_2.md     ← review 2: + CEO seat, live-researched, voted
 │   └── design-spec.md         ← the converged airframe spec (the WHAT)
 ├── specs/
 │   ├── system-spec.md         ← THE CONTRACT: every req traced to the software
