@@ -1,0 +1,10 @@
+# Generated CAD output (regenerate with: make cad)
+cad/out/
+*.glb
+*.stl
+*.step.bak
+# Datasheet PDFs (linked in bom/bom.csv — too large to commit)
+datasheets/*.pdf
+# uv / python caches
+__pycache__/
+.venv/
