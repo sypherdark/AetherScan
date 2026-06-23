@@ -26,9 +26,9 @@ from dataclasses import dataclass, field
 # redwood_sim/core/physics.py : QuadcopterParams
 MASS_KG: float = 1.45            # physics.py:28  mass
 ARM_LENGTH_M: float = 0.18       # physics.py:33  arm_length (centre → motor axis)
-IXX: float = 0.014               # physics.py:30
-IYY: float = 0.014               # physics.py:31
-IZZ: float = 0.026               # physics.py:32
+IXX: float = 0.0075              # physics.py  (reconciled to CAD, Review 2)
+IYY: float = 0.0095              # physics.py
+IZZ: float = 0.011               # physics.py
 MAX_TILT_RAD: float = 0.48       # physics.py:39  (≈27.5°) — control/struct envelope
 
 # redwood_sim/config.py : SimConfig

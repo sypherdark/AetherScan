@@ -1,4 +1,15 @@
-# Inertia Findings — a real sim↔hardware discrepancy
+# Inertia Findings — a real sim↔hardware discrepancy  ✅ RESOLVED 2026-06-23
+
+> **Resolution (Design Review 3):** the simulation's inertia was reconciled to the
+> CAD-derived values (`physics.py`: Ixx=0.0075, Iyy=0.0095, Izz=0.011) and the
+> attitude controller was re-validated. The existing gains were **retained** —
+> on the lower inertia, fixed gains give a faster *and* better-damped loop, and
+> `_verify_flight.py` confirms the flight envelope is unchanged (|roll|≈10°,
+> |pitch|≈12-14°, Z-std 8 mm; 8 unit tests green; CAD contract check green). The
+> analysis below is kept for the record.
+
+---
+
 
 `cad/assembly.py` places every real component at its mount point with its
 datasheet mass and computes the assembled inertia tensor. This is the most

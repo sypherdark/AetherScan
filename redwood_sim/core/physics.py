@@ -27,9 +27,16 @@ if TYPE_CHECKING:
 class QuadcopterParams:
     mass: float = 1.45
     gravity: float = 9.80665
-    Ixx: float = 0.014
-    Iyy: float = 0.014
-    Izz: float = 0.026
+    # Inertia reconciled (2026-06-23, Design Review 2) to the BUILDABLE airframe
+    # measured by hardware/cad/assembly.py. The previous 0.014/0.014/0.026 was
+    # physically unreachable for a 360 mm quad (hard Izz ceiling ≈0.048 with ALL
+    # mass at the rim); a real centre-concentrated build is ~2× lower, worst in
+    # yaw. The controls.py attitude gains were RETAINED (lower I at fixed gains →
+    # faster + better-damped; flight envelope verified unchanged). See
+    # hardware/specs/inertia-findings.md and _verify_flight.py.
+    Ixx: float = 0.0075
+    Iyy: float = 0.0095
+    Izz: float = 0.011
     arm_length: float = 0.18
     # Realistic aerodynamic drag (DJI Phantom-class)
     linear_drag: float = 0.55

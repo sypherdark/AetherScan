@@ -42,12 +42,17 @@ class FlightGains:
     # matches the nav's _altitude_velocity max so momentum never exceeds what
     # the nav intended; prevents overshoot even if wind adds a burst.
     max_vel: Tuple[float, float, float] = (2.5, 2.5, 0.42)
-    # Attitude PID — roll/pitch gains tuned so motor saturation never occurs
-    # during normal ±27° flight (max_tilt_rad).  With att_kp=7.5 the attitude
-    # torque contribution per motor exceeds t0=3.56 N at q_err>0.26 rad,
-    # saturating two diagonal motors and starving yaw authority.  At att_kp=3.5
-    # the per-motor torque contribution (1.22 N) stays well below t0 even at
-    # max tilt, so alpha=1.0 and all three torque axes get full authority.
+    # Attitude PID — RETAINED unchanged through the 2026-06-23 inertia
+    # reconciliation (physics.py inertia 0.014/0.014/0.026 → 0.0075/0.0095/0.011,
+    # Design Review 2).  Closed-loop poles are ωn=√(kp/I), ζ=kd/(2√(kp·I)).
+    # Lowering I at FIXED gains raises BOTH ωn (faster) and ζ (more damped), and
+    # since per-motor attitude torque = kp·q_err is unchanged, motor saturation is
+    # no closer than before.  A naive rescale (kp,kd ∝ I) preserves ωn/ζ but cuts
+    # the proportional stiffness, weakening disturbance rejection — measured: tilt
+    # peaks jumped to 37°.  Keeping the gains, the reconciled airframe flies the
+    # SAME validated envelope: |roll|≈10°, |pitch|≈12-14°, Z-std 8 mm (vs 10°/15°/
+    # 8 mm baseline), with extra agility/damping headroom.  Re-verify with
+    # _verify_flight.py after any inertia change.
     att_kp: Tuple[float, float, float] = (3.5, 3.5, 4.5)
     att_kd: Tuple[float, float, float] = (0.5, 0.5, 0.65)
     max_tilt_accel: float = 5.5
