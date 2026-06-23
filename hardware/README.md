@@ -41,6 +41,9 @@ hardware/
 │   ├── parameters.py          ← SINGLE SOURCE OF TRUTH for all dimensions
 │   ├── check_against_software.py ← asserts parameters == redwood_sim constants
 │   ├── frame.py               ← primary structure → out/frame.{glb,step,stl}
+│   ├── sensor_mounts.py       ← D435 nose bracket + belly flow/ToF mount
+│   ├── compute_tray.py        ← Jetson tray + soft-mounted FC pad
+│   ├── assembly.py            ← full assembly + mass/inertia tensor vs physics.py
 │   ├── render_preview.py      ← headless STL → PNG (no GPU needed)
 │   └── out/                   ← generated (gitignored)
 ├── electrical/
@@ -61,9 +64,18 @@ failing its check, and vice-versa.
 ```bash
 make check     # verify hardware ⇄ software agreement
 make cad       # build the airframe → out/frame.{glb,step,stl}
-make preview   # render out/frame.stl → out/frame_preview.png
-make all       # check → cad → preview
+make parts     # build sensor brackets + compute tray
+make assembly  # full assembly + mass/inertia tensor → out/assembly.*
+make inertia   # just the mass/inertia numbers vs physics.py (no build123d)
+make preview STL=out/assembly.stl   # render any STL → PNG
+make all       # check → cad → parts → assembly → preview
 ```
+
+> **Heads-up — a real finding:** `make inertia` shows the buildable drone has
+> ~20–54% **less** rotational inertia than `physics.py` assumes (Izz −54%). The
+> sim's Izz=0.026 is physically unreachable for a 360 mm quad; the real value is
+> ~0.012. This needs a sim reconciliation + controller re-tune — see
+> [specs/inertia-findings.md](specs/inertia-findings.md).
 
 ## Toolchain
 

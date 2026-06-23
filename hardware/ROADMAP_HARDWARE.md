@@ -18,10 +18,14 @@ Everything that makes the build *real on paper* before buying anything.
 - ✅ BOM of real, currently-purchasable parts (`bom/bom.csv`) — $1,659.
 - ✅ System spec, mass budget, power budget (`specs/`).
 - ✅ Parametric airframe CAD that exports GLB/STEP/STL (`cad/frame.py`).
-- ⬜ Sensor brackets (D435 nose, flow/ToF belly, LiDAR deck detailing).
-- ⬜ Compute tray (Jetson + FC) as its own CAD module.
-- ⬜ Full assembly with real per-part masses → compute the inertia tensor and
-  iterate to hit Ixx/Iyy/Izz, not just total mass (mass-budget.md).
+- ✅ Sensor brackets (D435 nose, flow/ToF belly) — `cad/sensor_mounts.py`.
+- ✅ Compute tray (Jetson + FC soft-mount) — `cad/compute_tray.py`.
+- ✅ Full assembly with real per-part masses + inertia tensor — `cad/assembly.py`.
+  **Finding:** buildable inertia is 20–54% below the sim's assumed values
+  (Izz −54%); the sim's numbers are physically unreachable. See
+  `specs/inertia-findings.md`.
+- ⬜ **DECISION:** reconcile `physics.py` inertia down to the buildable values
+  (Ixx≈0.0075, Iyy≈0.011, Izz≈0.012) + re-tune/re-validate the controller.
 - ⬜ Power & Sensor Distribution Board (PSDB) schematic + PCB (electrical phase,
   kicad-happy skill).
 
