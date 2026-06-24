@@ -23,6 +23,16 @@ POS = {
 }
 
 txt = PCB.read_text()
+
+# Idempotency guard: atopile PRESERVES manual layout edits across `ato build`, so
+# running this twice would stack duplicate outlines (and any bad edit persists and
+# can make the board unloadable). Always run on a FRESH layout:
+#   rm -rf elec/layout && ato build && python3 place_board.py
+if 'Edge.Cuts' in txt and 'gr_line' in txt:
+    raise SystemExit(
+        "Refusing to run: this layout already has an Edge.Cuts outline.\n"
+        "Regenerate clean first:  rm -rf elec/layout && ato build && python3 place_board.py")
+
 lines = txt.split("\n")
 i = 0
 placed = []

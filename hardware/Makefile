@@ -6,7 +6,7 @@ VENV_PY := $(abspath ..)/redwood_sim/.venv/bin/python
 CADDIR  := cad
 PCBDIR  := electrical/pcb
 
-.PHONY: all check cad parts assembly inertia preview pcb pcb-bom clean
+.PHONY: all check cad parts assembly inertia preview pcb pcb-fab pcb-bom clean
 
 all: check cad parts assembly preview
 
@@ -36,9 +36,14 @@ STL ?= out/frame.stl
 preview:
 	cd $(CADDIR) && $(VENV_PY) render_preview.py $(STL)
 
-## Build the PSDB PCB from code → build/builds/psdb/{*.kicad_pcb, BOM, power-tree}
+## Build the PSDB from code + clean placement (fresh layout every time).
+## (atopile preserves manual edits, so we wipe elec/layout to avoid stale edits.)
 pcb:
-	cd $(PCBDIR) && $(UV) --from atopile ato build
+	cd $(PCBDIR) && rm -rf elec/layout && $(UV) --from atopile ato build && python3 place_board.py
+
+## KiCad fab outputs: 3D render + DRC + JLCPCB gerbers → electrical/pcb/fab/
+pcb-fab:
+	cd $(PCBDIR) && ./fab.sh all
 
 ## Show the picked-parts BOM (real LCSC part numbers) after a build.
 pcb-bom:
