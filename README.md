@@ -160,6 +160,32 @@ and *fewer* wall contacts. Full audit: [REALWORLD_READINESS.md](REALWORLD_READIN
 
 ---
 
+## Hardware — the physical drone
+
+The simulation defines a real aircraft, and [`hardware/`](hardware/) designs it to
+match — **kept in accordance with the software by a checker** that fails if the CAD
+ever drifts from the physics model (`hardware/cad/check_against_software.py`).
+
+- **Airframe** — a 360 mm quad-X (1.45 kg, RPLIDAR A2 + RealSense D435i + Jetson
+  Orin Nano + Pixhawk/PX4), modelled parametrically in code with
+  [build123d](https://github.com/gumyr/build123d). See
+  [hardware/cad/](hardware/cad/).
+- **Design reviews** — converged through three multidisciplinary council reviews
+  (aero, mechanical, electrical, software, systems + a CEO) to a **unanimous
+  deployment-ready vote**, with the sim's inertia reconciled to the buildable
+  airframe and the controller re-validated. See
+  [hardware/design/](hardware/design/).
+- **Electrical** — the Power & Sensor Distribution Board is **defined in code**
+  ([atopile](https://github.com/atopile/atopile)) and laid out / 3D-rendered /
+  Gerber-exported with **KiCad**. See [hardware/electrical/](hardware/electrical/).
+- **Build plan** — funding-staged H0→H4 roadmap; design complete, parts not yet
+  bought. [hardware/ROADMAP_HARDWARE.md](hardware/ROADMAP_HARDWARE.md).
+
+A 2-page **investor brief** built from real captured system output lives in
+[presentation/](presentation/).
+
+---
+
 ## Scene assets
 
 AetherScan ships with **18 Meta Replica scenes** (`apartment_0–2`, `frl_apartment_0–5`,
@@ -191,6 +217,12 @@ dashboard/            ← Next.js + React Three Fiber UI (display only)
   src/components/three/  ← scene, point cloud, occupancy, path, drone renderers
   src/lib/            ← WebSocket client, scene registry, ROS↔Three transforms
 scripts/              ← Replica → GLB conversion, collision-mesh builder, semantics
+hardware/             ← THE PHYSICAL DRONE (design, CAD, electrical) — see below
+  design/             ← multidisciplinary design reviews → deployment-ready vote
+  cad/                ← parametric airframe (build123d) + software-accordance checker
+  electrical/pcb/     ← code-defined PCB (atopile) + KiCad layout/render/gerbers
+  specs/ · bom/       ← system spec, mass/power/inertia budgets, real-parts BOM
+presentation/         ← 2-page investor brief (PDF) built from real system output
 aetherscan_ws/        ← ROS 2 (Humble) workspace — HARDWARE-TRANSFER TARGET, not required to run the sim
 docker/               ← optional containerized sim + dashboard
 ```

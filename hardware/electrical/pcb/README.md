@@ -63,10 +63,13 @@ GUI work: open `elec/layout/psdb/psdb.kicad_pcb` in KiCad ▸ **PCB Editor** and
 route (or use the autorouter), then commit the `.kicad_pcb`.
 
 ### Next iterations (same loop)
-- Add the switching-controller ICs (`ato create part`: TI **TPS568230** 8 A,
-  **LMR33630** 3 A) + **INA226** + 2 mΩ shunt, and the connectors / reverse-polarity
-  P-FET + TVS.  *(The current board is the power-path skeleton: bulk cap, two buck
-  channels of passives, sense divider.)*
+- Add the switching-controller ICs (TI **TPS568230** 8 A, **LMR33630** 3 A) +
+  **INA226** + 2 mΩ shunt, and the connectors / reverse-polarity P-FET + TVS.
+  *(The current board is the power-path skeleton: bulk cap, two buck channels of
+  passives, sense divider.)*
+  **Note:** `ato create part --search` needs an **interactive terminal** (it
+  drives a TTY picker — it errors when piped). Run it yourself in a real shell to
+  fetch each IC from JLCPCB, or hand-author the component `.ato` + footprint.
 - Route copper + a ground pour; clear the silkscreen overlaps.
 - Run kicad-happy `emc` + `kicad` DFM review; iterate to clean.
 - Export the assembled board as STEP so it drops into the CAD assembly.
