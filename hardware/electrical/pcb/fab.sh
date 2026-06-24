@@ -2,7 +2,7 @@
 # PSDB fab outputs via KiCad's real engine (run after `ato build` + place_board.py).
 #   ./fab.sh render | drc | gerbers | all
 set -euo pipefail
-CLI="/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli"
+CLI="/Applications/KiCad.app/Contents/MacOS/kicad-cli"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PCB="$HERE/elec/layout/psdb/psdb.kicad_pcb"
 OUT="$HERE/fab"; mkdir -p "$OUT"

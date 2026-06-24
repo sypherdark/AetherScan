@@ -17,3 +17,5 @@ electrical/pcb/elec/layout/
 # uv / python caches
 __pycache__/
 .venv/
+# KiCad fab outputs (regenerate with: ./fab.sh)
+electrical/pcb/fab/
