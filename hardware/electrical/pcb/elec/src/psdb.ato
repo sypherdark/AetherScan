@@ -1,17 +1,16 @@
 """
 AetherScan Power & Sensor Distribution Board (PSDB) — code-defined in atopile.
 
-This is the schematic, AS CODE — same workflow as the airframe CAD (parametric,
-version-controlled, builds to a verifiable artifact). `ato build` compiles this to
-a KiCad PCB + BOM + power-tree, and the kicad-happy skills review the result.
+Now with the real switching ICs + their application circuits:
+  • Buck8A  — TI TPS568230 (8 A) → 5 V isolated rail for the Jetson
+  • Buck3A  — TI LMR33630 (3 A)  → 5 V rail for the FC + sensors
+  • INA226  — battery V/I telemetry over I²C (2 mΩ high-side shunt)
 
-Design intent (parts, filters, failsafe) is fully specified in:
-  hardware/electrical/psdb-design.md  and  emi-thermal-failsafe.md
+Feedback dividers set Vout = Vref·(1+Rtop/Rbot):
+  TPS568230 Vref 0.6 V → 73.2k/10k ≈ 5.00 V ; LMR33630 Vref 1.0 V → 40.2k/10k ≈ 5.02 V.
+Design intent / EMC / thermal / failsafe: ../psdb-design.md, ../emi-thermal-failsafe.md.
 
-Status: structural netlist (rails, regulators-as-network, protection, sensing,
-filtering, decoupling). The switching-IC footprints (TI TPS568230 8 A / LMR33630
-3 A) are dropped in at layout from their LCSC parts — this module models their
-external network so the power tree and BOM are real and the board builds.
+Run:  ato build   (or from repo: make pcb)
 """
 
 import ElectricPower
@@ -19,74 +18,166 @@ import Resistor
 import Capacitor
 import Inductor
 
+from "parts/Texas_Instruments_TPS568230RJER/Texas_Instruments_TPS568230RJER.ato" import Texas_Instruments_TPS568230RJER_package
+from "parts/Texas_Instruments_LMR33630ADDAR/Texas_Instruments_LMR33630ADDAR.ato" import Texas_Instruments_LMR33630ADDAR_package
+from "parts/Texas_Instruments_INA226AIDGSR/Texas_Instruments_INA226AIDGSR.ato" import Texas_Instruments_INA226AIDGSR_package
 
-module BuckReg:
-    """Synchronous step-down rail: power_in (VBAT) -> power_out (5 V).
 
-    Models the regulator's external network — input/output bulk + the inductor.
-    The controller IC (see psdb-design.md: TPS568230 for 8 A, LMR33630 for 3 A)
-    is placed at layout from its LCSC footprint; here we capture the power path,
-    decoupling, and a ferrite bead (modelled as a small inductor) on the output.
-    """
+module Buck8A:
+    """TI TPS568230, VBAT -> 5 V / 8 A (Jetson rail)."""
     power_in = new ElectricPower
     power_out = new ElectricPower
+    ic = new Texas_Instruments_TPS568230RJER_package
 
+    # Power pins
+    power_in.hv ~ ic.VIN
+    power_in.lv ~ ic.GND
+    power_in.lv ~ ic.AGND
+    power_in.lv ~ ic.EP
+    power_out.lv ~ power_in.lv
+
+    # Input decoupling
     cin = new Capacitor
-    cout = new Capacitor
-    l_sw = new Inductor          # buck inductor
-    fb = new Inductor            # output ferrite bead (EMI), ~600R@100MHz
-
     cin.capacitance = 22uF +/- 20%
     assert cin.max_voltage >= 35V
-    cout.capacitance = 44uF +/- 20%
-    assert cout.max_voltage >= 16V
+    power_in.hv ~ cin.unnamed[0]; cin.unnamed[1] ~ power_in.lv
+    cdec = new Capacitor
+    cdec.capacitance = 100nF +/- 10%
+    assert cdec.max_voltage >= 35V
+    power_in.hv ~ cdec.unnamed[0]; cdec.unnamed[1] ~ power_in.lv
+
+    # Enable: resistor divider from VIN (EN abs-max < VBAT, so cannot tie direct).
+    # ~10 V turn-on UVLO, comfortably below the 4S in-flight voltage.
+    r_en_t = new Resistor
+    r_en_b = new Resistor
+    r_en_t.resistance = 100kohm +/- 1%
+    r_en_b.resistance = 13kohm +/- 1%
+    power_in.hv ~ r_en_t.unnamed[0]; r_en_t.unnamed[1] ~ ic.EN
+    ic.EN ~ r_en_b.unnamed[0]; r_en_b.unnamed[1] ~ power_in.lv
+
+    # Bootstrap + VCC + soft-start
+    cbst = new Capacitor
+    cbst.capacitance = 100nF +/- 10%
+    ic.SW ~ cbst.unnamed[0]; cbst.unnamed[1] ~ ic.BST
+    cvcc = new Capacitor
+    cvcc.capacitance = 1uF +/- 20%
+    ic.VCC ~ cvcc.unnamed[0]; cvcc.unnamed[1] ~ power_in.lv
+    css = new Capacitor
+    css.capacitance = 2.2nF +/- 10%
+    ic.SS ~ css.unnamed[0]; css.unnamed[1] ~ power_in.lv
+    ic.MODE ~ power_in.lv
+
+    # Switch node -> inductor -> output
+    l_sw = new Inductor
     l_sw.inductance = 2.2uH +/- 20%
-    fb.inductance = 1uH +/- 30%
-
-    # Input decoupling across VBAT
-    power_in.hv ~ cin.unnamed[0]
-    cin.unnamed[1] ~ power_in.lv
-
-    # Power path: VBAT -> inductor -> ferrite bead -> 5 V out
-    power_in.hv ~ l_sw.unnamed[0]
-    l_sw.unnamed[1] ~ fb.unnamed[0]
-    fb.unnamed[1] ~ power_out.hv
+    ic.SW ~ l_sw.unnamed[0]; l_sw.unnamed[1] ~ power_out.hv
 
     # Output bulk
-    power_out.hv ~ cout.unnamed[0]
-    cout.unnamed[1] ~ power_out.lv
+    cout = new Capacitor
+    cout.capacitance = 44uF +/- 20%
+    assert cout.max_voltage >= 16V
+    power_out.hv ~ cout.unnamed[0]; cout.unnamed[1] ~ power_out.lv
 
-    power_in.lv ~ power_out.lv
+    # Feedback divider: 5 V from Vref 0.6 V
+    r_fb_t = new Resistor
+    r_fb_b = new Resistor
+    r_fb_t.resistance = 73.2kohm +/- 1%
+    r_fb_b.resistance = 10kohm +/- 1%
+    power_out.hv ~ r_fb_t.unnamed[0]; r_fb_t.unnamed[1] ~ ic.FB
+    ic.FB ~ r_fb_b.unnamed[0]; r_fb_b.unnamed[1] ~ power_out.lv
+
+
+module Buck3A:
+    """TI LMR33630, VBAT -> 5 V / 3 A (avionics rail)."""
+    power_in = new ElectricPower
+    power_out = new ElectricPower
+    ic = new Texas_Instruments_LMR33630ADDAR_package
+
+    power_in.hv ~ ic.VIN
+    power_in.lv ~ ic.PGND
+    power_in.lv ~ ic.EP
+    power_out.lv ~ power_in.lv
+
+    ic.EN ~ ic.VIN   # LMR33630 EN tolerates VIN — always-on
+
+    cin = new Capacitor
+    cin.capacitance = 22uF +/- 20%
+    assert cin.max_voltage >= 35V
+    power_in.hv ~ cin.unnamed[0]; cin.unnamed[1] ~ power_in.lv
+    cdec = new Capacitor
+    cdec.capacitance = 100nF +/- 10%
+    assert cdec.max_voltage >= 35V
+    power_in.hv ~ cdec.unnamed[0]; cdec.unnamed[1] ~ power_in.lv
+
+    cbst = new Capacitor
+    cbst.capacitance = 100nF +/- 10%
+    ic.SW ~ cbst.unnamed[0]; cbst.unnamed[1] ~ ic.BOOT
+    cvcc = new Capacitor
+    cvcc.capacitance = 1uF +/- 20%
+    ic.VCC ~ cvcc.unnamed[0]; cvcc.unnamed[1] ~ power_in.lv
+
+    l_sw = new Inductor
+    l_sw.inductance = 4.7uH +/- 20%
+    ic.SW ~ l_sw.unnamed[0]; l_sw.unnamed[1] ~ power_out.hv
+
+    cout = new Capacitor
+    cout.capacitance = 44uF +/- 20%
+    assert cout.max_voltage >= 16V
+    power_out.hv ~ cout.unnamed[0]; cout.unnamed[1] ~ power_out.lv
+
+    # Feedback: 5 V from Vref 1.0 V
+    r_fb_t = new Resistor
+    r_fb_b = new Resistor
+    r_fb_t.resistance = 40.2kohm +/- 1%
+    r_fb_b.resistance = 10kohm +/- 1%
+    power_out.hv ~ r_fb_t.unnamed[0]; r_fb_t.unnamed[1] ~ ic.FB
+    ic.FB ~ r_fb_b.unnamed[0]; r_fb_b.unnamed[1] ~ power_out.lv
 
 
 module Psdb:
-    """The board. One battery input, two isolated 5 V rails, battery sense."""
+    """The board: 4S in, two isolated 5 V rails, I²C battery telemetry."""
     vbat = new ElectricPower      # 4S 12.0-16.8 V (PM02 pass-through)
-    v5_comp = new ElectricPower   # 5 V / 8 A  -> Jetson Orin Nano (isolated)
-    v5_avi = new ElectricPower    # 5 V / 3 A  -> Pixhawk + RPLIDAR + flow/ToF + D435 hub
+    vbat_sw = new ElectricPower   # downstream of the sense shunt
+    v5_comp = new ElectricPower   # 5 V / 8 A -> Jetson Orin Nano
+    v5_avi = new ElectricPower    # 5 V / 3 A -> Pixhawk + sensors
+    i2c_scl = new ElectricPower   # (reused as a signal carrier)
 
-    # Bulk input capacitor (low-ESR) across the pack
+    vbat.lv ~ vbat_sw.lv
+
+    # Bulk input cap
     cbulk = new Capacitor
     cbulk.capacitance = 470uF +/- 20%
     assert cbulk.max_voltage >= 35V
-    vbat.hv ~ cbulk.unnamed[0]
-    cbulk.unnamed[1] ~ vbat.lv
+    vbat.hv ~ cbulk.unnamed[0]; cbulk.unnamed[1] ~ vbat.lv
 
-    # The two rails — isolated so a Jetson transient can't brown out the FC
-    buck_comp = new BuckReg
-    buck_avi = new BuckReg
-    vbat ~ buck_comp.power_in
+    # INA226 high-side battery telemetry: 2 mΩ shunt in the VBAT line
+    ina = new Texas_Instruments_INA226AIDGSR_package
+    rshunt = new Resistor
+    rshunt.resistance = 2mohm +/- 1%
+    vbat.hv ~ rshunt.unnamed[0]; rshunt.unnamed[1] ~ vbat_sw.hv
+    vbat.hv ~ ina.VINpos
+    vbat_sw.hv ~ ina.VINneg
+    vbat_sw.hv ~ ina.VBUS
+    ina.GND ~ vbat.lv
+    ina.A0 ~ vbat.lv
+    ina.A1 ~ vbat.lv
+    # INA226 logic supply from the avionics 5 V rail
+    v5_avi.hv ~ ina.VSpos
+    cina = new Capacitor
+    cina.capacitance = 100nF +/- 10%
+    ina.VSpos ~ cina.unnamed[0]; cina.unnamed[1] ~ vbat.lv
+    # I²C pull-ups to 5 V
+    r_scl = new Resistor
+    r_sda = new Resistor
+    r_scl.resistance = 4.7kohm +/- 5%
+    r_sda.resistance = 4.7kohm +/- 5%
+    v5_avi.hv ~ r_scl.unnamed[0]; r_scl.unnamed[1] ~ ina.SCL
+    v5_avi.hv ~ r_sda.unnamed[0]; r_sda.unnamed[1] ~ ina.SDA
+
+    # The two rails (fed from the switched/sensed VBAT node)
+    buck_comp = new Buck8A
+    buck_avi = new Buck3A
+    vbat_sw ~ buck_comp.power_in
     buck_comp.power_out ~ v5_comp
-    vbat ~ buck_avi.power_in
+    vbat_sw ~ buck_avi.power_in
     buck_avi.power_out ~ v5_avi
-
-    # Battery-voltage sense divider (to the INA226 / FC ADC). 10k:2k -> /6.
-    rs_top = new Resistor
-    rs_bot = new Resistor
-    rs_top.resistance = 10kohm +/- 1%
-    rs_bot.resistance = 2kohm +/- 1%
-    signal vsense
-    vbat.hv ~ rs_top.unnamed[0]
-    rs_top.unnamed[1] ~ vsense
-    vsense ~ rs_bot.unnamed[0]
-    rs_bot.unnamed[1] ~ vbat.lv

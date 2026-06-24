@@ -1,70 +1,84 @@
 """
-Programmatic placement + board outline for the PSDB.
-Edits elec/layout/psdb/psdb.kicad_pcb: positions each footprint into a clean
-two-buck-channel layout and adds a 50x42 mm Edge.Cuts outline. atopile preserves
-manual placement across rebuilds, so this is the right artifact to edit.
+Auto-placement + board outline for the PSDB.
+Groups footprints by their atopile module address (buck_comp.* / buck_avi.* /
+top-level INA cluster) and lays each cluster out — IC on the left, its passives
+in a grid to the right — then adds a board outline.
 
-Run: python place_board.py   (then kicad-cli render / DRC / gerbers)
+atopile PRESERVES manual layout edits across `ato build`, so always run on a FRESH
+layout:  rm -rf elec/layout && ato build && python3 place_board.py
+(`make pcb` does this for you.)
 """
 import re, uuid
 from pathlib import Path
 
 PCB = Path(__file__).parent / "elec/layout/psdb/psdb.kicad_pcb"
+W, Hh = 82, 52
 
-# ref -> (x, y, rotation)  [mm; board 0..50 x 0..42]
-POS = {
-    "C5": (10, 21, 0),                                   # 470µF bulk (input)
-    # buck_comp channel  (cin · L_sw · ferrite · cout)
-    "C1": (17, 12, 0), "L2": (24, 12, 0), "L1": (31, 12, 0), "C2": (39, 12, 0),
-    # buck_avi channel
-    "C3": (17, 30, 0), "L4": (24, 30, 0), "L3": (31, 30, 0), "C4": (39, 30, 0),
-    # battery-sense divider
-    "R1": (45, 19, 90), "R2": (45, 24, 90),
+# region: (ic_x, ic_y, grid_x0, grid_y0, cols, dx, dy)
+REGIONS = {
+    "buck_comp": (14, 14, 26, 7,  5, 9.0, 8),   # top band
+    "buck_avi":  (14, 38, 26, 31, 5, 9.0, 8),   # bottom band
+    "ina":       (72, 11, 64, 22, 2, 9.0, 8),   # right column (INA + top-level)
 }
+def clamp(v, lo, hi): return max(lo, min(hi, v))
+def region_of(addr: str) -> str:
+    if addr.startswith("buck_comp"): return "buck_comp"
+    if addr.startswith("buck_avi"):  return "buck_avi"
+    return "ina"
 
 txt = PCB.read_text()
-
-# Idempotency guard: atopile PRESERVES manual layout edits across `ato build`, so
-# running this twice would stack duplicate outlines (and any bad edit persists and
-# can make the board unloadable). Always run on a FRESH layout:
-#   rm -rf elec/layout && ato build && python3 place_board.py
-if 'Edge.Cuts' in txt and 'gr_line' in txt:
-    raise SystemExit(
-        "Refusing to run: this layout already has an Edge.Cuts outline.\n"
-        "Regenerate clean first:  rm -rf elec/layout && ato build && python3 place_board.py")
-
+if "Edge.Cuts" in txt and "gr_line" in txt:
+    raise SystemExit("Already placed — regenerate clean: rm -rf elec/layout && ato build && python3 place_board.py")
 lines = txt.split("\n")
+
+# collect footprints: (line_index_of_top_at, reference, address)
+fps = []
 i = 0
-placed = []
 while i < len(lines):
     if lines[i].lstrip().startswith("(footprint "):
-        ref = None
-        for j in range(i, min(i + 45, len(lines))):
+        ref = addr = None
+        at_idx = None
+        j = i + 1
+        while j < len(lines) and not lines[j].startswith("\t)"):   # until footprint close
+            if at_idx is None and re.match(r"^\t\t\(at ", lines[j]):
+                at_idx = j
             m = re.search(r'\(property "Reference" "([^"]+)"', lines[j])
-            if m:
-                ref = m.group(1); break
-        for j in range(i + 1, min(i + 14, len(lines))):
-            if re.match(r"^\t\t\(at ", lines[j]):
-                if ref in POS:
-                    x, y, r = POS[ref]
-                    lines[j] = f"\t\t(at {x} {y} {r})"
-                    placed.append(ref)
-                break
-    i += 1
+            if m: ref = m.group(1)
+            m = re.search(r'\(property "atopile_address" "([^"]+)"', lines[j])
+            if m: addr = m.group(1)
+            j += 1
+        if at_idx and ref:
+            fps.append((at_idx, ref, addr or ""))
+        i = j
+    else:
+        i += 1
+
+# assign positions per region (IC = reference starting with U at the anchor)
+counters = {k: 0 for k in REGIONS}
+placed = []
+for at_idx, ref, addr in fps:
+    reg = region_of(addr)
+    icx, icy, gx, gy, cols, dx, dy = REGIONS[reg]
+    if ref.startswith("U"):
+        x, y, rot = icx, icy, 0
+    else:
+        n = counters[reg]; counters[reg] += 1
+        x = gx + (n % cols) * dx
+        y = gy + (n // cols) * dy
+        rot = 0
+    x = clamp(x, 4, W - 4); y = clamp(y, 4, Hh - 4)
+    lines[at_idx] = f"\t\t(at {round(x,2)} {round(y,2)} {rot})"
+    placed.append(ref)
 
 txt = "\n".join(lines)
 
-# board outline (Edge.Cuts) — insert before final closing paren
+# board outline (Edge.Cuts)
 def edge(x1, y1, x2, y2):
     return (f'\t(gr_line (start {x1} {y1}) (end {x2} {y2}) '
-            f'(stroke (width 0.15) (type solid)) (layer "Edge.Cuts") '
-            f'(uuid "{uuid.uuid4()}"))')
-W, Hh = 50, 42
+            f'(stroke (width 0.15) (type solid)) (layer "Edge.Cuts") (uuid "{uuid.uuid4()}"))')
 outline = "\n".join([edge(0,0,W,0), edge(W,0,W,Hh), edge(W,Hh,0,Hh), edge(0,Hh,0,0)])
-# mounting holes as silk circles for reference (visual)
 idx = txt.rstrip().rfind(")")
 txt = txt[:idx] + outline + "\n" + txt[idx:]
 
 PCB.write_text(txt)
-print(f"placed {len(placed)} parts: {', '.join(placed)}")
-print(f"added 50x42 mm Edge.Cuts outline -> {PCB}")
+print(f"placed {len(placed)} parts in 3 clusters; {W}x{Hh} mm outline -> {PCB}")

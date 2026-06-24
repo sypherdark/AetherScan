@@ -56,11 +56,14 @@ python3 place_board.py         # 2. clean 2-channel placement + 50x42 mm outline
 - `gerbers/` + `psdb_gerbers.zip` — fab output.
 
 ### Current status (honest)
-The board is **placed + outlined + 3D-rendered**, Gerbers export. DRC is clean of
-electrical errors; the only items are cosmetic silkscreen overlaps (auto-placed
-designators) and **15 unconnected nets — i.e. it is not routed yet**. Routing is
-GUI work: open `elec/layout/psdb/psdb.kicad_pcb` in KiCad ▸ **PCB Editor** and
-route (or use the autorouter), then commit the `.kicad_pcb`.
+The schematic is **complete**: the real switching ICs (TI TPS568230 8 A, LMR33630
+3 A) with their full application circuits — feedback dividers set for 5 V,
+bootstrap caps, VCC decoupling, enable — plus the INA226 + 2 mΩ shunt for I²C
+battery telemetry. 27 components, all picked from JLCPCB. The board is
+**placed (auto-clustered by module) + outlined + 3D-rendered**, and Gerbers
+export. **Still not routed** — copper traces are GUI work: open
+`elec/layout/psdb/psdb.kicad_pcb` in KiCad ▸ **PCB Editor** and route (or use the
+autorouter), then commit the `.kicad_pcb`.
 
 ### Next iterations (same loop)
 - Add the switching-controller ICs (TI **TPS568230** 8 A, **LMR33630** 3 A) +

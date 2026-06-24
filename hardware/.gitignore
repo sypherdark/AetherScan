@@ -8,9 +8,16 @@ datasheets/*.pdf
 # atopile PCB build output + caches (regenerate with: make pcb)
 electrical/pcb/build/
 electrical/pcb/.ato/
-# Auto-fetched part packages (datasheets/footprints/STEP, ~80 MB) — reproducible
-# from the LCSC part numbers in psdb.ato, like node_modules.
-electrical/pcb/elec/src/parts/
+# Part packages: ignore everything, EXCEPT the hand-created IC parts (made with
+# `ato create part` — these are NOT re-fetched by `ato build`, so they must be
+# committed). The passive parts are auto-fetched from LCSC on each build.
+electrical/pcb/elec/src/parts/*
+!electrical/pcb/elec/src/parts/Texas_Instruments_*
+# …but keep the big binaries out even of the committed IC parts.
+electrical/pcb/elec/src/parts/Texas_Instruments_*/**/*.pdf
+electrical/pcb/elec/src/parts/Texas_Instruments_*/**/*.step
+electrical/pcb/elec/src/parts/Texas_Instruments_*/**/*.stp
+electrical/pcb/elec/src/parts/Texas_Instruments_*/**/*.zip
 # Auto-generated layout (no manual placement yet) — start committing this once
 # real board placement/routing begins.
 electrical/pcb/elec/layout/

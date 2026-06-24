@@ -1,0 +1,26 @@
+import has_datasheet
+import has_designator_prefix
+import has_part_picked
+import is_atomic_part
+import is_auto_generated
+
+component Texas_Instruments_LMR33630ADDAR_package:
+    # This trait marks this file as auto-generated
+    # If you want to manually change it, remove the trait
+    trait is_auto_generated<system="ato_part", source="easyeda:C841384", date="2026-06-24T22:05:09.736864+00:00", checksum="8309364f510ec6310ef7bbfa56415d8ec515e92502f95561c0bdfce2d26e339b">
+
+    trait is_atomic_part<manufacturer="Texas Instruments", partnumber="LMR33630ADDAR", footprint="ESOP-8_L4.9-W3.9-P1.27-LS6.0-TL-EP.kicad_mod", symbol="LMR33630ADDAR.kicad_sym", model="ESOP-8_L4.9-W3.9-P1.27-LS6.0-TL-EP.STEP">
+    trait has_part_picked::by_supplier<supplier_id="lcsc", supplier_partno="C841384", manufacturer="Texas Instruments", partno="LMR33630ADDAR">
+    trait has_designator_prefix<prefix="U">
+    trait has_datasheet<datasheet="https://www.lcsc.com/datasheet/lcsc_datasheet_2410121900_Texas-Instruments-LMR33630ADDAR_C841384.pdf">
+
+    # pins
+    signal BOOT ~ pin 7
+    signal EN ~ pin 3
+    signal EP ~ pin 9
+    signal FB ~ pin 5
+    signal PG ~ pin 4
+    signal PGND ~ pin 1
+    signal SW ~ pin 8
+    signal VCC ~ pin 6
+    signal VIN ~ pin 2
