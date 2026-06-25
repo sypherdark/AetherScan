@@ -2,7 +2,7 @@
 
 Component-level design of the Power & Sensor Distribution Board, satisfying
 requirements E1–E8 in [README.md](README.md). This is the complete electrical
-design; only the **PCB layout/Gerbers** wait on the KiCad tool (kicad-happy). With
+design; only the **PCB layout/Gerbers** wait on the KiCad tool. With
 this, an engineer can capture the schematic directly.
 
 Board: **4-layer** (Sig / GND / PWR / Sig) — the inner ground plane is the

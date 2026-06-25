@@ -13,7 +13,7 @@ Legend: ✅ done · 🔧 in progress · ⬜ not started · 💰 needs funds
 ## Phase H0 — Paper drone (no spend) — ✅ COMPLETE / DEPLOYMENT-READY
 
 Everything that makes the build *real on paper* before buying anything. Converged
-through 3 design-council reviews to a **unanimous deployment-ready** vote.
+through structured multidisciplinary design reviews to a **deployment-ready** sign-off.
 
 - ✅ Lock the hardware contract to the software (`cad/parameters.py` + checker).
 - ✅ BOM of real, currently-purchasable parts (`bom/bom.csv`) — $1,659.
@@ -24,15 +24,15 @@ through 3 design-council reviews to a **unanimous deployment-ready** vote.
 - ✅ **Inertia reconciled** to the buildable airframe (`physics.py`
   0.0075/0.0095/0.011) + **controller re-validated** (gains retained; flight
   envelope unchanged). `specs/inertia-findings.md` RESOLVED.
-- ✅ **Product objective:** construction-progress monitoring (Review 3 R2).
-- ✅ **Airframe frozen** for v1 (Review 3 R4).
+- ✅ **Product objective:** construction-progress monitoring.
+- ✅ **Airframe frozen** for v1.
 - ✅ **Electrical design complete:** PSDB component-level
   (`electrical/psdb-design.md`) + EMI/thermal/failsafe
   (`electrical/emi-thermal-failsafe.md`).
-- 🔁 Folding arms deferred to v2 (Review 2 P4).
+- 🔁 Folding arms deferred to v2.
 
 **Exit MET:** a complete digital twin — geometry, mass properties, the full
-electrical design — all consistent with `redwood_sim`, unanimously judged
+electrical design — all consistent with `redwood_sim`, judged
 deployment-ready. Next dollar buys parts (Phase H1).
 
 ## Phase H1 — Bench brain (~$530) — 💰

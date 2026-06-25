@@ -16,7 +16,7 @@ off-the-shelf board does cleanly for *this* sensor/compute payload:
 
 > **Tooling (chosen 2026-06-23):** the board is authored **as code** with
 > [atopile](https://github.com/atopile/atopile) (`ato`) and reviewed with the
-> [kicad-happy](https://github.com/aklofas/kicad-happy) Claude skills — same
+> standard KiCad ERC/DRC + DFM review — same
 > code→build→verify loop as the airframe CAD. The code-defined PSDB lives in
 > [pcb/](pcb/) and builds today (`make pcb`) with real LCSC-sourced parts. The
 > component-level design intent is in [psdb-design.md](psdb-design.md) and

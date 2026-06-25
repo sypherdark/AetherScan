@@ -59,6 +59,6 @@ the one piece of this failsafe chain the simulation does not yet model.
 
 ## Status
 With psdb-design.md, this closes the electrical design at the **design level**.
-Remaining electrical work is **build-phase**: KiCad layout/Gerbers (kicad-happy
+Remaining electrical work is **build-phase**: KiCad layout/Gerbers (KiCad review
 tool), fabrication, and the two bench bring-up gates above — all gated on funded
 parts and the PCB tool, not on further design.

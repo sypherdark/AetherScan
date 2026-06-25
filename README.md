@@ -170,10 +170,10 @@ ever drifts from the physics model (`hardware/cad/check_against_software.py`).
   Orin Nano + Pixhawk/PX4), modelled parametrically in code with
   [build123d](https://github.com/gumyr/build123d). See
   [hardware/cad/](hardware/cad/).
-- **Design reviews** — converged through three multidisciplinary council reviews
-  (aero, mechanical, electrical, software, systems + a CEO) to a **unanimous
-  deployment-ready vote**, with the sim's inertia reconciled to the buildable
-  airframe and the controller re-validated. See
+- **Design reviews** — converged through structured multidisciplinary design
+  reviews (aerodynamics, mechanical, electrical, software, systems) to a
+  **deployment-ready** sign-off, with the sim's inertia reconciled to the
+  buildable airframe and the controller re-validated. See
   [hardware/design/](hardware/design/).
 - **Electrical** — the Power & Sensor Distribution Board is **defined in code**
   ([atopile](https://github.com/atopile/atopile)) and laid out / 3D-rendered /
@@ -218,7 +218,7 @@ dashboard/            ← Next.js + React Three Fiber UI (display only)
   src/lib/            ← WebSocket client, scene registry, ROS↔Three transforms
 scripts/              ← Replica → GLB conversion, collision-mesh builder, semantics
 hardware/             ← THE PHYSICAL DRONE (design, CAD, electrical) — see below
-  design/             ← multidisciplinary design reviews → deployment-ready vote
+  design/             ← multidisciplinary design reviews & converged spec
   cad/                ← parametric airframe (build123d) + software-accordance checker
   electrical/pcb/     ← code-defined PCB (atopile) + KiCad layout/render/gerbers
   specs/ · bom/       ← system spec, mass/power/inertia budgets, real-parts BOM

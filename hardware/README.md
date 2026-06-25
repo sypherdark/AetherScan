@@ -6,19 +6,17 @@ physics model, the sensor suite is the one the real-world readiness audit
 validated, and a checker (`cad/check_against_software.py`) fails CI if the two
 ever drift apart.
 
-> **Status:** Phase H0 **complete — design + simulation DEPLOYMENT-READY** (unanimous
-> council vote, Design Review 3). Inertia reconciled to the buildable airframe and
-> the controller re-validated; airframe frozen; electrical design complete (PSDB
-> BOM/nets + EMI/thermal/failsafe). Everything remaining is build-phase, gated on
-> funded parts + the KiCad tool — not on further design. No parts bought yet.
-> See [design/DESIGN_REVIEW_3.md](design/DESIGN_REVIEW_3.md),
-> [ROADMAP_HARDWARE.md](ROADMAP_HARDWARE.md).
+> **Status:** Phase H0 **complete — design + simulation DEPLOYMENT-READY.**
+> Inertia reconciled to the buildable airframe and the controller re-validated;
+> airframe frozen; electrical design complete (PSDB BOM/nets + EMI/thermal/failsafe).
+> Everything remaining is build-phase, gated on funded parts — not on further
+> design. No parts bought yet. See [ROADMAP_HARDWARE.md](ROADMAP_HARDWARE.md).
 
 ## The drone, in one table
 
-> Airframe converged through a multidisciplinary design review —
-> [design/DESIGN_COUNCIL.md](design/DESIGN_COUNCIL.md) (aero, mech, electrical,
-> software + systems argue the tradeoffs) → [design/design-spec.md](design/design-spec.md).
+> Airframe converged through structured multidisciplinary design reviews
+> (aerodynamics, mechanical, electrical, software, systems) → the converged spec in
+> [design/design-spec.md](design/design-spec.md).
 
 | | |
 |---|---|
@@ -40,10 +38,7 @@ hardware/
 ├── ROADMAP_HARDWARE.md        ← funding-aware build plan (H0→H4)
 ├── Makefile                   ← make check | cad | preview | all
 ├── design/
-│   ├── DESIGN_COUNCIL.md      ← review 1: multidisciplinary design (the WHY)
-│   ├── DESIGN_REVIEW_2.md     ← review 2: + CEO seat, live-researched, voted
-│   ├── DESIGN_REVIEW_3.md     ← review 3: iterated to UNANIMOUS deployment-ready
-│   └── design-spec.md         ← the converged airframe spec (the WHAT)
+│   └── design-spec.md         ← the converged airframe spec
 ├── specs/
 │   ├── system-spec.md         ← THE CONTRACT: every req traced to the software
 │   ├── mass-budget.md         ← 1442 g build, inertia-matching plan
@@ -61,7 +56,7 @@ hardware/
 │   └── out/                   ← generated (gitignored)
 ├── electrical/
 │   ├── README.md              ← power + signal trees, PSDB requirements E1–E8
-│   └── pcb/                   ← KiCad PSDB project (via kicad-happy skill)
+│   └── pcb/                   ← KiCad PSDB project (atopile + KiCad)
 └── datasheets/                ← (gitignored; links in bom.csv)
 ```
 
@@ -93,19 +88,17 @@ make all       # check → cad → parts → assembly → preview
 ## Toolchain
 
 - **CAD:** [build123d](https://github.com/gumyr/build123d) via `uv` (zero-setup:
-  `uvx --from build123d python ...`). The build123d skill is installed at
-  `~/.claude/skills/build123d`.
+  `uvx --from build123d python ...`).
 - **Preview render:** matplotlib + trimesh in the `redwood_sim/.venv` (headless,
   no GPU).
 - **PCB:** code-defined with [atopile](https://github.com/atopile/atopile)
-  (`make pcb`) + reviewed with the [kicad-happy](https://github.com/aklofas/kicad-happy)
-  skills (installed at `~/.claude/skills/{kicad,emc,spice,bom,jlcpcb,...}`). The
-  PSDB builds today with real LCSC parts — see [electrical/pcb/](electrical/pcb/).
+  (`make pcb`) + reviewed with standard KiCad ERC/DRC + DFM checks. The PSDB
+  builds today with real LCSC parts — see [electrical/pcb/](electrical/pcb/).
 
 ## What's done vs. next
 - ✅ Contract, BOM, specs, parametric airframe, preview pipeline, electrical design.
 - ⬜ Sensor brackets + compute tray CAD modules.
 - ⬜ Full assembly with per-part masses → inertia-match to `physics.py`.
-- ⬜ PSDB schematic + layout (kicad-happy).
+- ⬜ PSDB schematic + layout (KiCad).
 
 See [ROADMAP_HARDWARE.md](ROADMAP_HARDWARE.md) for the staged plan.

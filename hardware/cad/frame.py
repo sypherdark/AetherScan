@@ -1,5 +1,5 @@
 """
-AetherScan airframe — streamlined structure (design-council revision).
+AetherScan airframe — streamlined structure (design revision).
 
 A 360 mm quad-X built like a real indoor scanning drone, not a stack of plates:
 

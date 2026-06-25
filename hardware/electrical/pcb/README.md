@@ -13,9 +13,9 @@ workflow (the way `cad/frame.py` builds the airframe). Two complementary pieces:
 | Tool | Role | Analogue in our CAD flow |
 |---|---|---|
 | **atopile** (`ato`) | **Authors** the board in `.ato` code; compiler solves constraints, **picks real parts (LCSC)**, runs checks, emits a KiCad `.kicad_pcb` + BOM + power-tree | `build123d` / `frame.py` |
-| **kicad-happy** (12 Claude skills) | **Reviews** the result: DFM, EMC pre-compliance, SPICE testbenches, BOM sourcing (DigiKey/Mouser/LCSC), JLCPCB/PCBWay export | `check_against_software.py` + `render_preview.py` |
+| **KiCad** (ERC/DRC/DFM) | **Reviews** the result: DFM, EMC pre-compliance, SPICE testbenches, BOM sourcing (DigiKey/Mouser/LCSC), JLCPCB/PCBWay export | `check_against_software.py` + `render_preview.py` |
 
-kicad-happy is installed at `~/.claude/skills/{kicad,emc,spice,bom,jlcpcb,...}`;
+
 atopile runs zero-setup via `uvx --from atopile ato …`.
 
 ## The loop (same as the CAD loop)
@@ -24,7 +24,7 @@ atopile runs zero-setup via `uvx --from atopile ato …`.
 # author:   edit elec/src/psdb.ato   (the schematic, as code)
 make pcb            # ato build → real parts picked, checks run, KiCad PCB emitted
 make pcb-bom        # show the picked-parts BOM (real LCSC #s)
-# review:  ask Claude to run the kicad-happy `kicad` / `emc` / `spice` skills
+# review:  run the KiCad ERC/DRC + DFM checks
 #          on build/builds/psdb/  → DFM / EMC / SPICE findings
 ```
 
@@ -74,5 +74,5 @@ autorouter), then commit the `.kicad_pcb`.
   drives a TTY picker — it errors when piped). Run it yourself in a real shell to
   fetch each IC from JLCPCB, or hand-author the component `.ato` + footprint.
 - Route copper + a ground pour; clear the silkscreen overlaps.
-- Run kicad-happy `emc` + `kicad` DFM review; iterate to clean.
+- Run KiCad review `emc` + `kicad` DFM review; iterate to clean.
 - Export the assembled board as STEP so it drops into the CAD assembly.

@@ -1,6 +1,6 @@
 # AetherScan — Converged Airframe Spec
 
-The single-page reference the council (`DESIGN_COUNCIL.md`) converged on. This is
+The single-page converged airframe spec. This is
 what `cad/frame.py` builds and what the specs/BOM must agree with.
 
 ## Topology
@@ -15,7 +15,7 @@ what `cad/frame.py` builds and what the specs/BOM must agree with.
 - **Twin curved skids** — clear the belly flow/ToF sensor and the battery.
 - One fastener system throughout: **M3**.
 
-## Sensors (placement = the council's hard requirements)
+## Sensors (placement = hard requirements)
 | Sensor | Placement | Why |
 |---|---|---|
 | RPLIDAR A2M12 | Top of mast, scan plane ≈135 mm, **damped mount** | unobstructed 360° horizon above the prop disc; damping protects the IMU/estimator |

@@ -5,7 +5,7 @@ Propulsion,4-in-1 ESC,Holybro Tekko32 F4 Metal 65A,1,35,60,Holybro,DShot/UART,BL
 Power,Battery,Tattu R-Line 4S 6000mAh 95C,1,520,65,Tattu,XT60,Biggest mass lever; sets AUW + flight time
 Power,Power module,Holybro PM02 (V3) 60A,1,36,18,Holybro,analog V/I,Battery voltage+current telemetry to Pixhawk
 Power,5V BEC (companion),Mateksys BEC12S-PRO (5-12V 8A),1,12,15,Mateksys,5V rail,Dedicated 5V/6A+ for Jetson Orin Nano
-Power,Custom PSDB,AetherScan Power+Sensor Dist. Board,1,25,12,custom (JLCPCB),—,See hardware/electrical/ — KiCad project (kicad-happy)
+Power,Custom PSDB,AetherScan Power+Sensor Dist. Board,1,25,12,custom (JLCPCB),—,See hardware/electrical/ — KiCad project
 Flight Controller,Autopilot,Holybro Pixhawk 6C,1,35,200,Holybro,MAVLink/UART,PX4; offboard setpoints from companion
 Compute,Companion,NVIDIA Jetson Orin Nano 8GB Dev Kit,1,150,249,NVIDIA,USB/UART/I2C,Runs ported autonomy stack (redwood_sim core)
 Compute,microSD,SanDisk Extreme 128GB A2,1,2,18,SanDisk,—,Jetson OS + maps

@@ -76,7 +76,7 @@ a rotation the simulation never had.
 
 ## Open items before this spec is "build-ready"
 - [ ] Mass distribution iteration to actually hit Ixx/Iyy/Izz (not just total mass) — see mass-budget.md.
-- [ ] PSDB schematic + PCB (electrical phase, kicad-happy skill).
+- [ ] PSDB schematic + PCB (electrical phase, KiCad review skill).
 - [ ] Sensor brackets (D435 nose mount, flow/ToF belly mount) as separate CAD modules.
 - [ ] Vibration isolation for the FC (soft-mount grommets) and the D435i IMU.
 - [ ] Thermal: Jetson airflow path vs. prop wash.
