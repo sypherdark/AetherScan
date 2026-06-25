@@ -1,0 +1,125 @@
+(footprint "AISHI_ERJ1HM471G16C36T:CAP-TH_BD10.0-P5.00-D1.0-FD"
+	(version 20241229)
+	(generator "faebryk_convert")
+	(generator_version "v5")
+	(layer "F.Cu")
+	(tedit "5DC5F6A4")
+	(uuid "bf9f4474-c3d1-4d06-b788-c889e8397f9f")
+	(property "Reference" "REF**"
+		(at 0 -4)
+		(layer "F.SilkS")
+		(uuid "957de8b5-2be9-446c-8951-90f133c34450")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "CAP-TH_BD10.0-P5.00-D1.0-FD"
+		(at 0 4)
+		(layer "F.Fab")
+		(uuid "cc050c68-5eea-43b9-b45c-e22f90c54a72")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_circle
+		(center -5 5)
+		(end -4.97 5)
+		(stroke
+			(width 0.06)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(locked no)
+		(uuid "16bf9b24-6203-4cb5-8398-c1ecf9e50654")
+	)
+	(fp_circle
+		(center 2.54 0)
+		(end 2.69 0)
+		(stroke
+			(width 0.3)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(locked no)
+		(uuid "437b95d9-2fe7-41ac-a792-f5671fa2ab5a")
+	)
+	(fp_circle
+		(center -2.54 0)
+		(end -2.39 0)
+		(stroke
+			(width 0.3)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(locked no)
+		(uuid "4fe6c4be-7a04-44c0-8a63-6e29e72a1b01")
+	)
+	(fp_circle
+		(center 0 0)
+		(end 5 0)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(locked no)
+		(uuid "320647f7-7325-47d9-b371-118760c1a85f")
+	)
+	(fp_line
+		(start -4.57 0)
+		(end -3.56 0)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(layers "F.SilkS")
+		(locked no)
+		(uuid "a9471ef6-7a41-434f-8a3c-5ca11e22abf8")
+	)
+	(fp_line
+		(start -4.06 -0.76)
+		(end -4.06 0.76)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(layers "F.SilkS")
+		(locked no)
+		(uuid "fcb0e6cd-7a19-4c0a-9bb0-936b4aa7e928")
+	)
+	(pad "1" thru_hole circle
+		(at -2.54 0 0)
+		(size 1.6 1.6)
+		(drill 0.999998)
+		(layers "*.Cu" "*.Mask")
+		(uuid "a15b200d-d8e4-4a3d-a965-f6c5819cdf7b")
+	)
+	(pad "2" thru_hole circle
+		(at 2.54 0 0)
+		(size 1.6 1.6)
+		(drill 0.999998)
+		(layers "*.Cu" "*.Mask")
+		(uuid "ecd7a699-8edf-48bf-9ad0-ee90e7dac787")
+	)
+	(model "${KIPRJMOD}/../../src/parts/AISHI_ERJ1HM471G16C36T/CAP-TH_D10.0-H16.0-P5.00.step"
+		(offset
+			(xyz 0 -0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+	(embedded_fonts no)
+)

@@ -181,3 +181,12 @@ module Psdb:
     buck_comp.power_out ~ v5_comp
     vbat_sw ~ buck_avi.power_in
     buck_avi.power_out ~ v5_avi
+
+    # One unified ground: explicitly bond every ground reference to vbat.lv so the
+    # whole board shares a single GND net (and a ground pour can tie it all).
+    vbat.lv ~ buck_comp.power_in.lv
+    vbat.lv ~ buck_comp.power_out.lv
+    vbat.lv ~ buck_avi.power_in.lv
+    vbat.lv ~ buck_avi.power_out.lv
+    vbat.lv ~ v5_comp.lv
+    vbat.lv ~ v5_avi.lv

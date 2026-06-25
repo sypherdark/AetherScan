@@ -1,0 +1,19 @@
+import has_datasheet
+import has_designator_prefix
+import has_part_picked
+import is_atomic_part
+import is_auto_generated
+
+component Murata_Electronics_GRM32ER61C476KE15L_package:
+    # This trait marks this file as auto-generated
+    # If you want to manually change it, remove the trait
+    trait is_auto_generated<system="ato_part", source="easyeda:C77101", date="2026-06-23T14:11:38.627215+00:00", checksum="2a72d035fdd1315ddfcf11ee118dfd97882a57ca0ed9514d2cf0f0c6a5e3ffc3">
+
+    trait is_atomic_part<manufacturer="Murata Electronics", partnumber="GRM32ER61C476KE15L", footprint="C1210.kicad_mod", symbol="GRM32ER61C476KE15L.kicad_sym", model="C1210_L3.2-W2.5-H2.5.step">
+    trait has_part_picked::by_supplier<supplier_id="lcsc", supplier_partno="C77101", manufacturer="Murata Electronics", partno="GRM32ER61C476KE15L">
+    trait has_designator_prefix<prefix="C">
+    trait has_datasheet<datasheet="https://www.lcsc.com/datasheet/lcsc_datasheet_2212021100_Murata-Electronics-GRM32ER61C476KE15L_C77101.pdf">
+
+    # pins
+    pin 1
+    pin 2

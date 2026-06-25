@@ -1,0 +1,19 @@
+import has_datasheet
+import has_designator_prefix
+import has_part_picked
+import is_atomic_part
+import is_auto_generated
+
+component AISHI_ERJ1HM471G16C36T_package:
+    # This trait marks this file as auto-generated
+    # If you want to manually change it, remove the trait
+    trait is_auto_generated<system="ato_part", source="easyeda:C3038120", date="2026-06-23T14:11:41.769220+00:00", checksum="3247ac8612c441972f741d5c5d5aac7ebf64f16b5caccdbe429bcca552ac0e06">
+
+    trait is_atomic_part<manufacturer="AISHI", partnumber="ERJ1HM471G16C36T", footprint="CAP-TH_BD10.0-P5.00-D1.0-FD.kicad_mod", symbol="ERJ1HM471G16C36T.kicad_sym", model="CAP-TH_D10.0-H16.0-P5.00.step">
+    trait has_part_picked::by_supplier<supplier_id="lcsc", supplier_partno="C3038120", manufacturer="AISHI", partno="ERJ1HM471G16C36T">
+    trait has_designator_prefix<prefix="U">
+    trait has_datasheet<datasheet="https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2207211800_AISHI-Aihua-Group-ERJ1HM471G16C36T_C3038120.pdf">
+
+    # pins
+    pin 1
+    pin 2

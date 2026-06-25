@@ -1,0 +1,7 @@
+(sym_lib_table
+  (lib (name "Device")(type "KiCad")(uri "/Applications/KiCad.app/Contents/SharedSupport/symbols/Device.kicad_sym")(options "")(descr ""))
+  (lib (name "power")(type "KiCad")(uri "/Applications/KiCad.app/Contents/SharedSupport/symbols/power.kicad_sym")(options "")(descr ""))
+  (lib (name "Texas_Instruments_INA226AIDGSR")(type "KiCad")(uri "${KIPRJMOD}/../../src/parts/Texas_Instruments_INA226AIDGSR/INA226AIDGSR.kicad_sym")(options "")(descr ""))
+  (lib (name "Texas_Instruments_LMR33630ADDAR")(type "KiCad")(uri "${KIPRJMOD}/../../src/parts/Texas_Instruments_LMR33630ADDAR/LMR33630ADDAR.kicad_sym")(options "")(descr ""))
+  (lib (name "Texas_Instruments_TPS568230RJER")(type "KiCad")(uri "${KIPRJMOD}/../../src/parts/Texas_Instruments_TPS568230RJER/TPS568230RJER_C2878938.kicad_sym")(options "")(descr ""))
+)

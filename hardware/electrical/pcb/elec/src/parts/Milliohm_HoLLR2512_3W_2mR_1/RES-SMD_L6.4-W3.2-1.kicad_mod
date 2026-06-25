@@ -1,0 +1,138 @@
+(footprint "Milliohm_HoLLR2512_3W_2mR_1:RES-SMD_L6.4-W3.2-1"
+	(version 20241229)
+	(generator "faebryk_convert")
+	(generator_version "v5")
+	(layer "F.Cu")
+	(tedit "5DC5F6A4")
+	(uuid "95070d23-17ef-4253-af07-ff979d6a7b89")
+	(property "Reference" "REF**"
+		(at 0 -4)
+		(layer "F.SilkS")
+		(uuid "f64deeb3-e5d0-40b7-a1ad-32d9d2b564f2")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "RES-SMD_L6.4-W3.2-1"
+		(at 0 4)
+		(layer "F.Fab")
+		(uuid "cdfaa71d-b0eb-46b2-96f8-e125769d25fe")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_circle
+		(center -3.2 1.6)
+		(end -3.17 1.6)
+		(stroke
+			(width 0.06)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(locked no)
+		(uuid "a8273cd9-98e5-4905-bdf7-4100166b6750")
+	)
+	(fp_line
+		(start -1.89 -2.03)
+		(end -4.69 -2.03)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(layers "F.SilkS")
+		(locked no)
+		(uuid "acdc4485-40e6-48ca-a1c9-d8139d19f963")
+	)
+	(fp_line
+		(start -4.69 -2.03)
+		(end -4.69 2.04)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(layers "F.SilkS")
+		(locked no)
+		(uuid "dd6c7084-2836-4ce2-b4cd-f81d5c2dd80a")
+	)
+	(fp_line
+		(start -4.69 2.04)
+		(end -1.77 2.04)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(layers "F.SilkS")
+		(locked no)
+		(uuid "0e8e02d6-c6cc-4131-be82-5c7e0aab83d3")
+	)
+	(fp_line
+		(start 1.89 2.16)
+		(end 4.69 2.16)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(layers "F.SilkS")
+		(locked no)
+		(uuid "55383faf-6785-4c34-b690-79dd7175207d")
+	)
+	(fp_line
+		(start 4.69 2.16)
+		(end 4.69 -2.03)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(layers "F.SilkS")
+		(locked no)
+		(uuid "5a37cbb9-452b-49c8-81af-39e0938feca0")
+	)
+	(fp_line
+		(start 4.69 -2.03)
+		(end 1.76 -2.03)
+		(stroke
+			(width 0.25)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(layers "F.SilkS")
+		(locked no)
+		(uuid "73e41858-7b6c-428b-a920-6b0ff3f724c3")
+	)
+	(pad "2" smd rect
+		(at 3.1 0 0)
+		(size 2.5 3.4)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "1dd9f007-6752-4247-ae75-a5b004fb2c0a")
+	)
+	(pad "1" smd rect
+		(at -3.1 0 0)
+		(size 2.5 3.4)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "cc51e32c-3c66-487f-8455-4446b8ee6689")
+	)
+	(model "${KIPRJMOD}/../../src/parts/Milliohm_HoLLR2512_3W_2mR_1/RES-SMD_L6.4-W3.2-1.step"
+		(offset
+			(xyz 0 0 -0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+	(embedded_fonts no)
+)

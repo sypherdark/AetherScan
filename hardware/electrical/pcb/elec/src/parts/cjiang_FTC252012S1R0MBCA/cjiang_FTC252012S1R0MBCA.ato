@@ -1,0 +1,19 @@
+import has_datasheet
+import has_designator_prefix
+import has_part_picked
+import is_atomic_part
+import is_auto_generated
+
+component cjiang_FTC252012S1R0MBCA_package:
+    # This trait marks this file as auto-generated
+    # If you want to manually change it, remove the trait
+    trait is_auto_generated<system="ato_part", source="easyeda:C5832370", date="2026-06-23T14:11:39.894661+00:00", checksum="6d91d3476a970a5959e6031222dbc87cfb3ebf01ecdcf5ffa69ee2131355b4f3">
+
+    trait is_atomic_part<manufacturer="cjiang ", partnumber="FTC252012S1R0MBCA", footprint="IND-SMD_L2.5-W2.0-VLS252012CX-150M.kicad_mod", symbol="FTC252012S1R0MBCA.kicad_sym", model="IND-SMD_L2.5-W2.0-VLS252012CX-150M.step">
+    trait has_part_picked::by_supplier<supplier_id="lcsc", supplier_partno="C5832370", manufacturer="cjiang ", partno="FTC252012S1R0MBCA">
+    trait has_designator_prefix<prefix="U">
+    trait has_datasheet<datasheet="https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2306021632_cjiang--Changjiang-Microelectronics-Tech-FTC252012S1R0MBCA_C5832370.pdf">
+
+    # pins
+    pin 2
+    pin 1

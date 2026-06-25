@@ -1,0 +1,19 @@
+import has_datasheet
+import has_designator_prefix
+import has_part_picked
+import is_atomic_part
+import is_auto_generated
+
+component HRE_CGA0805X5R226M350MT_package:
+    # This trait marks this file as auto-generated
+    # If you want to manually change it, remove the trait
+    trait is_auto_generated<system="ato_part", source="easyeda:C6119901", date="2026-06-23T14:11:36.396391+00:00", checksum="97e34746f7a783b197b029aa6d440e2d2d4ec9058f115e108ec50f5ef1bfe78c">
+
+    trait is_atomic_part<manufacturer="HRE", partnumber="CGA0805X5R226M350MT", footprint="C0805.kicad_mod", symbol="CGA0805X5R226M350MT.kicad_sym", model="C0805_L2.0-W1.3-H1.3.step">
+    trait has_part_picked::by_supplier<supplier_id="lcsc", supplier_partno="C6119901", manufacturer="HRE", partno="CGA0805X5R226M350MT">
+    trait has_designator_prefix<prefix="C">
+    trait has_datasheet<datasheet="https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2403281426_HRE-CGA0805X5R226M350MT_C6119901.pdf">
+
+    # pins
+    pin 1
+    pin 2

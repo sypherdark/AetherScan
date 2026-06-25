@@ -12,13 +12,15 @@ import re, uuid
 from pathlib import Path
 
 PCB = Path(__file__).parent / "elec/layout/psdb/psdb.kicad_pcb"
-W, Hh = 82, 52
+W, Hh = 70, 54
 
 # region: (ic_x, ic_y, grid_x0, grid_y0, cols, dx, dy)
+# Tight clusters: each regulator's passives sit close to its IC so routes are
+# short (the autorouter completes all nets only when the buck loops are compact).
 REGIONS = {
-    "buck_comp": (14, 14, 26, 7,  5, 9.0, 8),   # top band
-    "buck_avi":  (14, 38, 26, 31, 5, 9.0, 8),   # bottom band
-    "ina":       (72, 11, 64, 22, 2, 9.0, 8),   # right column (INA + top-level)
+    "buck_comp": (10, 14, 18, 7,  4, 6.5, 7),   # top band, 4-col tight grid
+    "buck_avi":  (10, 41, 18, 34, 4, 6.5, 7),   # bottom band
+    "ina":       (60, 13, 47, 24, 2, 7.5, 8),   # right column (INA + bulk + shunt)
 }
 def clamp(v, lo, hi): return max(lo, min(hi, v))
 def region_of(addr: str) -> str:

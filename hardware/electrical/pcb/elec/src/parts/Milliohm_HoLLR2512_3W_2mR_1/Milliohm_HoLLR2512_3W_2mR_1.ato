@@ -1,0 +1,19 @@
+import has_datasheet
+import has_designator_prefix
+import has_part_picked
+import is_atomic_part
+import is_auto_generated
+
+component Milliohm_HoLLR2512_3W_2mR_1_package:
+    # This trait marks this file as auto-generated
+    # If you want to manually change it, remove the trait
+    trait is_auto_generated<system="ato_part", source="easyeda:C2994640", date="2026-06-24T22:07:53.012348+00:00", checksum="011048d590c4a9044a11efa9f83735f738a9556765ab7923207323c01f992726">
+
+    trait is_atomic_part<manufacturer="Milliohm", partnumber="HoLLR2512-3W-2mR-1%", footprint="RES-SMD_L6.4-W3.2-1.kicad_mod", symbol="HOLLR2512-3W-2MR-1%.kicad_sym", model="RES-SMD_L6.4-W3.2-1.step">
+    trait has_part_picked::by_supplier<supplier_id="lcsc", supplier_partno="C2994640", manufacturer="Milliohm", partno="HoLLR2512-3W-2mR-1%">
+    trait has_designator_prefix<prefix="R">
+    trait has_datasheet<datasheet="https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2204121445_Milliohm-HoLLR2512-3W-2mR-1-_C2994640.pdf">
+
+    # pins
+    pin 2
+    pin 1

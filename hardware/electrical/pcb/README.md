@@ -55,15 +55,21 @@ python3 place_board.py         # 2. clean 2-channel placement + 50x42 mm outline
 - `drc.json` — design-rule check.
 - `gerbers/` + `psdb_gerbers.zip` — fab output.
 
-### Current status (honest)
-The schematic is **complete**: the real switching ICs (TI TPS568230 8 A, LMR33630
-3 A) with their full application circuits — feedback dividers set for 5 V,
-bootstrap caps, VCC decoupling, enable — plus the INA226 + 2 mΩ shunt for I²C
-battery telemetry. 27 components, all picked from JLCPCB. The board is
-**placed (auto-clustered by module) + outlined + 3D-rendered**, and Gerbers
-export. **Still not routed** — copper traces are GUI work: open
-`elec/layout/psdb/psdb.kicad_pcb` in KiCad ▸ **PCB Editor** and route (or use the
-autorouter), then commit the `.kicad_pcb`.
+### Current status — full KiCad project, routed
+The PSDB is a **complete KiCad project** in `elec/layout/psdb/`:
+`psdb.kicad_pro` + `psdb.kicad_sch` (schematic) + `psdb.kicad_pcb` (routed board).
+- **Schematic** — 27 components: the real switching ICs (TI TPS568230 8 A,
+  LMR33630 3 A) with full application circuits (5 V feedback dividers, bootstrap,
+  VCC decoupling, enable) + INA226 + 2 mΩ shunt for I²C battery telemetry.
+- **PCB — fully routed**: 314 copper tracks, 0 unconnected nets, a bottom-layer
+  ground pour. DRC clean except cosmetic silkscreen-overlap warnings. Gerbers +
+  drill export to `fab/` (`make pcb-fab`).
+- Schematic and PCB are **in accordance** by construction — the schematic's net
+  labels are generated from the board's netlist.
+
+**Rebuild from scratch:** `make pcb` (place) → `./route.sh` (autoroute via
+Freerouting) → `python3 build_schematic.py` (schematic). *Warning:* `make pcb`
+wipes `elec/layout/`, discarding routing — only run it to start over.
 
 ### Next iterations (same loop)
 - Add the switching-controller ICs (TI **TPS568230** 8 A, **LMR33630** 3 A) +
